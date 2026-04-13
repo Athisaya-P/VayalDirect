@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Dashboard - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    .popup {
+      animation: popupAnim 0.3s ease-out forwards;
+    }
+    @keyframes popupAnim {
+      from { opacity: 0; transform: scale(0.95) translateY(40px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-content {
+      max-height: 78vh;
+      overflow-y: auto;
+    }
+
+    .side-menu {
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .side-menu.open {
+      transform: translateX(0);
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slide-up 0.35s ease-out forwards;
+    }
+
+    @keyframes bounce-in {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { opacity: 1; transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .animate-bounce-in {
+      animation: bounce-in 0.6s ease-out forwards;
+    }
+
+    @keyframes pulse-step {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    #hintPanel p { animation: pulse-step 2.4s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-green-700 rounded-2xl flex items-center justify-center text-3xl shadow-inner">🌾</div>
+        <div>
+          <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+          <p class="text-xs text-green-600 -mt-1">Farmer Dashboard</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6">
+         <select id="languageSelect" onchange="handleLanguageSelectChange(this.value)" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+       
+          <option value="google">🌐 More Languages</option>
+        </select>
+
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" 
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+        <button id="hintToggle" onclick="showHintModal()" class="px-4 py-2 rounded-2xl bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-sm">
+          ℹ️Demo
+        </button>
+
+       
+
+        <button onclick="toggleSideMenu()" class="w-11 h-11 flex items-center justify-center text-3xl text-green-700 hover:bg-green-50 rounded-2xl transition">
+          ☰
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hamburger Side Menu -->
+  <div id="sideMenu" class="side-menu fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-[300] p-8 overflow-y-auto">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-2xl font-semibold text-green-800">My Dashboard</h2>
+      <button onclick="toggleSideMenu()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
+    </div>
+
+    <!-- User ID, Email & Password -->
+    <div class="bg-green-50 rounded-3xl p-6 mb-10">
+      <div class="space-y-4 text-sm">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-gray-500">🆔 Unique Farmer ID</p>
+            <p id="sideMenuUserID" class="font-mono font-bold text-green-700">FARM-ABC123-XYZ</p>
+          </div>
+          <div id="verificationContainer">
+            <span id="verificationStatus" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Not Verified</span>
+          </div>
+        </div>
+        <div>
+          <p class="text-gray-500">📧 Email</p>
+          <p id="sideMenuEmail" class="font-medium">farmer@example.com</p>
+        </div>
+        <div>
+          <p class="text-gray-500">📱 Phone</p>
+          <p id="sideMenuPhone" class="font-medium">+91 XXXXX XXXXX</p>
+        </div>
+        <div>
+          <p class="text-gray-500">🔐 Password</p>
+          <p class="font-medium">••••••••</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <div onclick="showLandDetails()" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">📍</span>
+          <div>
+            <p class="font-semibold text-green-800">Land Details</p>
+            <p class="text-sm text-gray-500">Land Size, Crops & Location</p>
+          </div>
+        </div>
+      </div>
+
+      <div onclick="showBankDetails()" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">💰</span>
+          <div>
+            <p class="font-semibold text-green-800">Payment Details</p>
+            <p class="text-sm text-gray-500">UPI & Bank Information</p>
+          </div>
+        </div>
+      </div>
+
+      <div onclick="showOrderHistory()" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">📦</span>
+          <div>
+            <p class="font-semibold text-green-800">Your Order History</p>
+            <p class="text-sm text-gray-500">Completed & Pending Orders</p>
+          </div>
+        </div>
+      </div>
+
+      <div onclick="showDelivererDetails()" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">🚚</span>
+          <div>
+            <p class="font-semibold text-green-800">Your Deliverers</p>
+            <p class="text-sm text-gray-500">Live Tracking & Details</p>
+          </div>
+        </div>
+      </div>
+
+      <div onclick="showFarmerFriends()" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">👥</span>
+          <div>
+            <p class="font-semibold text-green-800">Farmer Friends</p>
+            <p class="text-sm text-gray-500">Backup Network & Chat</p>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div onclick="goBackHome()" class="cursor-pointer bg-red-50 border border-red-200 hover:border-red-400 rounded-3xl p-6 card-hover">
+        <div class="flex items-center gap-4">
+          <span class="text-4xl">🏠</span>
+          <div>
+            <p class="font-semibold text-red-700">Back to Home</p>
+            <p class="text-sm text-red-600">Return to starting page</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <!-- Welcome -->
+    <div class="mb-10 flex items-center gap-4">
+      <h1 class="text-4xl font-bold text-green-900 lang-text">Good Morning, Farmer! 👋</h1>
+      <span id="verifiedBadge" class="bg-green-100 text-green-700 px-4 py-1 rounded-3xl text-sm font-medium hidden">✅ Verified Farmer</span>
+    
+    </div><p class="text-green-600 mt-2">Here's how your farm is doing today in Coimbatore</p>
+    
+    <!-- Stats -->
+     <br>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+      <div class="bg-white p-6 rounded-3xl shadow-sm card-hover">
+        <p class="text-sm text-gray-500">Total Earnings</p>
+        <p class="text-4xl font-bold text-green-700 mt-2">₹48,750</p>
+      </div>
+      <div class="bg-white p-6 rounded-3xl shadow-sm card-hover">
+        <p class="text-sm text-gray-500">Orders Today</p>
+        <p class="text-4xl font-bold text-green-700 mt-2">12</p>
+      </div>
+      <div class="bg-white p-6 rounded-3xl shadow-sm card-hover">
+        <p class="text-sm text-gray-500">Active Listings</p>
+        <p id="activeCount" class="text-4xl font-bold text-green-700 mt-2">0</p>
+      </div>
+      <div class="bg-white p-6 rounded-3xl shadow-sm card-hover">
+        <p class="text-sm text-gray-500">Rating</p>
+        <p class="text-4xl font-bold text-green-700 mt-2">4.9 ★</p>
+      </div>
+    </div>
+
+    <!-- Sell New Item Button -->
+    <div class="mb-12">
+      <button onclick="showSellModal()" 
+        class="w-full md:w-auto bg-green-700 hover:bg-green-800 text-white px-12 py-5 rounded-3xl font-semibold text-lg flex items-center justify-center gap-3 shadow-lg">
+        <span class="text-3xl">+</span> Sell New Item
+      </button>
+    </div>
+
+    <!-- My Stocks -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-semibold text-green-900 mb-6">My Stocks</h2>
+      <div id="stocksContainer" class="grid md:grid-cols-4 gap-6">
+        <!-- Stocks rendered here -->
+      </div>
+    </div>
+
+   <!-- Active Listings -->
+<div>
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-semibold text-green-900">My Active Listings</h2>
+    <span id="activeCountSmall" class="text-green-600 font-medium"></span>
+  </div>
+  <div id="listingsContainer" class="grid md:grid-cols-3 gap-6">
+    <!-- listings will be rendered here by JS -->
+  </div>
+</div>
+
+  <!-- Compact Sell New Item Modal -->
+  <div id="sellModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[200] p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full popup shadow-2xl overflow-hidden">
+      <div class="p-5 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h2 class="text-xl font-semibold">Sell New Produce</h2>
+        <button onclick="hideSellModal()" class="text-2xl text-gray-400 hover:text-red-500">×</button>
+      </div>
+      
+      <div class="p-6 space-y-6">
+        <div>
+          <label class="block text-sm font-medium mb-1">Produce Type</label>
+          <select id="produceType" class="w-full p-3.5 border border-gray-300 rounded-2xl focus:outline-none focus:border-green-600">
+            <option value="">Select Produce</option>
+            <option value="Coconut">🥥 Tender Coconut</option>
+            <option value="Tomato">🍅 Tomato</option>
+            <option value="Banana">🍌 Banana Bunch</option>
+            <option value="Onion">🧅 Onion</option>
+            <option value="Potato">🥔 Potato</option>
+            <option value="Brinjal">🍆 Brinjal</option>
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Quantity</label>
+            <input id="quantity" type="number" placeholder="50" class="w-full p-3.5 border border-gray-300 rounded-2xl focus:outline-none focus:border-green-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Unit</label>
+            <select id="unit" class="w-full p-3.5 border border-gray-300 rounded-2xl focus:outline-none focus:border-green-600">
+              <option value="Kg">Kg</option>
+              <option value="Pieces">Pieces</option>
+               <option value="Litres">Litres</option>
+              <option value="Bunches">Bunches</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-green-50 p-5 rounded-3xl">
+          <p class="text-green-700 font-medium text-sm">🤖 AI Suggested Fair Price</p>
+          <p id="aiPrice" class="text-3xl font-bold text-green-800 mt-1">₹ —</p>
+          <p id="marketPrice" class="text-xs text-gray-600">Current Market: ₹ — / Kg</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Your Selling Price (₹)</label>
+          <input id="sellingPrice" type="number" placeholder="Enter your price" class="w-full p-3.5 border border-gray-300 rounded-2xl focus:outline-none focus:border-green-600">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Additional Details (Optional)</label>
+          <textarea id="description" rows="2" placeholder="Fresh harvested today • Organic • Immediate delivery..."
+            class="w-full p-3.5 border border-gray-300 rounded-2xl focus:outline-none focus:border-green-600 text-sm"></textarea>
+        </div>
+      </div>
+
+      <div class="p-6 border-t flex gap-3">
+        <button onclick="hideSellModal()" class="flex-1 py-3.5 border border-gray-300 rounded-3xl font-medium text-sm">Cancel</button>
+        <button onclick="addNewListing()" class="flex-1 py-3.5 bg-green-700 text-white rounded-3xl font-semibold text-sm hover:bg-green-800">Add Listing</button>
+      </div>
+    </div>
+  </div>
+
+ <!-- Bank / Payment Details Section -->
+<div id="bankSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl font-semibold text-green-800">Payment Details</h2>
+      <button onclick="hideBankSection()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+    </div>
+
+    <!-- UPI & Bank Info -->
+    <div class="bg-green-50 rounded-3xl p-8 mb-10">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-gray-500 text-sm">UPI ID</p>
+          <p class="text-2xl font-medium text-green-700">karthickfarmer@oksbi</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Bank Account</p>
+          <p class="text-2xl font-medium">State Bank of India • ****7842</p>
+          <p class="text-sm text-gray-500">IFSC: SBIN0001234</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <h3 class="text-xl font-semibold text-green-900 mb-6">Recent Payments Received</h3>
+    
+    <div id="transactionsContainer" class="space-y-6">
+      <!-- Transactions added by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Farm Details Section -->
+<div id="farmDetailsSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl font-semibold text-green-800">🌾 Farm Details</h2>
+      <button onclick="hideFarmDetails()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+    </div>
+
+    <!-- Land Details -->
+    <div class="bg-green-50 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">📍 Land Information</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <p class="text-gray-600 text-sm">Total Land Size</p>
+          <p id="farmLandSize" class="text-4xl font-bold text-green-700 mt-2">0</p>
+          <p class="text-gray-500 text-sm">acres</p>
+        </div>
+        <div>
+          <p class="text-gray-600 text-sm">Location</p>
+          <p id="farmVillage" class="text-2xl font-semibold text-green-800 mt-2">Coimbatore</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crops Production -->
+    <div class="bg-white border border-green-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">🌱 Crops Produced</h3>
+      <div id="farmCropsContainer" class="grid md:grid-cols-2 gap-6">
+        <div class="text-center p-6 bg-gray-50 rounded-2xl">
+          <p class="text-gray-500">No crops recorded yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Infrastructure -->
+    <div class="bg-white border border-green-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">🚚 Delivery Infrastructure</h3>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-gray-600 text-sm">Number of Deliverers</p>
+          <p id="farmDeliverers" class="text-4xl font-bold text-green-700 mt-2">0</p>
+        </div>
+        <div>
+          <div>
+            <p class="text-gray-600 text-sm mb-4">Vehicles</p>
+            <div id="farmVehiclesContainer" class="border border-green-100 rounded-2xl overflow-hidden">
+              <table class="min-w-full text-left">
+                <thead class="bg-green-50">
+                  <tr>
+                    <th class="px-4 py-2 text-sm font-semibold text-green-700">Type</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-green-700">Count</th>
+                  </tr>
+                </thead>
+                <tbody id="farmVehiclesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div class="bg-blue-50 border border-blue-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-blue-900 mb-6">🏦 Bank Account Details</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <p class="text-blue-600 text-sm">Account Holder</p>
+          <p id="farmAccountName" class="text-lg font-medium text-blue-900 mt-2">—</p>
+        </div>
+        <div>
+          <p class="text-blue-600 text-sm">Bank Name</p>
+          <p id="farmBankName" class="text-lg font-medium text-blue-900 mt-2">—</p>
+        </div>
+        <div>
+          <p class="text-blue-600 text-sm">Account Number</p>
+          <p id="farmAccountNumber" class="text-lg font-medium text-blue-900 mt-2 font-mono">****<span id="farmAccountLast4">****</span></p>
+        </div>
+        <div>
+          <p class="text-blue-600 text-sm">IFSC Code</p>
+          <p id="farmIFSC" class="text-lg font-medium text-blue-900 mt-2 font-mono">—</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="hideFarmDetails()" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-3xl font-semibold">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- Land Details Section -->
+<div id="landDetailsSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl font-semibold text-green-800">📍 Land Details</h2>
+      <div class="flex gap-4">
+        <button onclick="editLandDetails()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-2xl font-medium">✏️ Edit Details</button>
+        <button onclick="hideLandDetails()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+      </div>
+    </div>
+
+    <!-- Land Information -->
+    <div class="bg-green-50 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">🏡 Land Information</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <p class="text-gray-600 text-sm">Total Land Size</p>
+          <p id="landSize" class="text-4xl font-bold text-green-700 mt-2">0</p>
+          <p class="text-gray-500 text-sm">acres</p>
+        </div>
+        <div>
+          <p class="text-gray-600 text-sm">Location</p>
+          <p id="landLocation" class="text-2xl font-semibold text-green-800 mt-2">Coimbatore</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crops Information -->
+    <div class="bg-white border border-green-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">🌱 Crops Grown</h3>
+      <div id="landCropsContainer" class="grid md:grid-cols-2 gap-6">
+        <div class="text-center p-6 bg-gray-50 rounded-2xl">
+          <p class="text-gray-500">No crops recorded yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Infrastructure -->
+    <div class="bg-white border border-green-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-green-900 mb-6">🚚 Delivery Setup</h3>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-gray-600 text-sm">Number of Deliverers</p>
+          <p id="landDeliverers" class="text-4xl font-bold text-green-700 mt-2">0</p>
+        </div>
+        <div>
+          <div>
+            <p class="text-gray-600 text-sm mb-4">Vehicles</p>
+            <div id="landVehiclesContainer" class="space-y-2">
+              <p class="text-gray-500 text-sm">No vehicles recorded</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document Verification -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-3xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-yellow-900 mb-6">📄 Document Verification</h3>
+      <div id="landDocumentsStatus" class="space-y-4">
+        <p class="text-yellow-700">⚠️ Land documents not verified. Upload proof to get verified badge.</p>
+        <button onclick="uploadLandDocuments()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-2xl font-medium">
+          📎 Upload Land Documents
+        </button>
+      </div>
+    </div>
+
+    <button onclick="hideLandDetails()" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-3xl font-semibold">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- Edit Land Details Modal -->
+<div id="editLandModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[300] flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+    <h3 class="text-2xl font-semibold text-green-800 mb-6">Edit Land Details</h3>
+    
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Land Size (acres)</label>
+        <input type="number" id="editLandSize" step="0.1" min="0.1" 
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+        <input type="text" id="editLocation" placeholder="e.g. Coimbatore, Tamil Nadu"
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Deliverers</label>
+        <input type="number" id="editDeliverers" min="0" 
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Vehicles</label>
+        <input type="number" id="editVehicles" min="0" 
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+        <select id="editVehicleType" class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+          <option value="">Select vehicle type</option>
+                  <option value="Motorcycle">Motorcycle</option>
+                  <option value="Auto-Rickshaw">Auto-Rickshaw</option>
+                  <option value="Small Truck">Small Truck (1-3 ton)</option>
+                  <option value="Medium Truck">Medium Truck (3-5 ton)</option>
+                  <option value="Large Truck">Large Truck (5+ ton)</option>
+                  <option value="Bicycle">Bicycle</option>
+                  <option value="Cart">Cart</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="flex gap-4 mt-8">
+      <button onclick="cancelEditLand()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-2xl font-medium">Cancel</button>
+      <button onclick="saveLandDetails()" class="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-2xl font-medium">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Verification Modal -->
+<div id="verificationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[300] flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-8 max-w-lg w-full">
+    <h3 class="text-2xl font-semibold text-green-800 mb-6">🔒 Get Verified</h3>
+    <p class="text-gray-600 mb-6">Upload your land documents to get verified and build trust with buyers.</p>
+    
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Document Type</label>
+        <select id="documentType" class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+          <option value="">Select document type</option>
+          <option value="land_deed">Land Deed/Patta</option>
+          <option value="survey_document">Survey Document</option>
+          <option value="ownership_certificate">Ownership Certificate</option>
+          <option value="lease_agreement">Lease Agreement</option>
+          <option value="other">Other Land Document</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Document</label>
+        <input type="file" id="documentFile" accept=".jpg,.jpeg,.png,.pdf" 
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+        <p class="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+      </div>
+      
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <p class="text-sm text-blue-800">
+          <strong>📋 Verification Requirements:</strong><br>
+          • Clear, readable document<br>
+          • Your name should match the document<br>
+          • Land details should match your profile<br>
+          • Documents will be reviewed within 24 hours
+        </p>
+      </div>
+    </div>
+    
+    <div class="flex gap-4 mt-8">
+      <button onclick="hideVerificationModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-2xl font-medium">Cancel</button>
+      <button onclick="submitVerificationDocuments()" class="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-2xl font-medium">Submit for Verification</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order History Section (3+ items) -->
+  <div id="orderHistorySection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-semibold text-green-800">Your Order History</h2>
+        <button onclick="hideOrderHistory()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+      </div>
+      <div id="orderHistoryCards" class="space-y-6"></div>
+    </div>
+  </div>
+
+  <!-- Deliverer Section -->
+  <div id="delivererSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-semibold text-green-800">Your Deliverers</h2>
+        <button onclick="hideDelivererDetails()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+      </div>
+      <div class="grid md:grid-cols-1 gap-6">
+        <!-- Deliverers table will be rendered here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Farmer Friends Section -->
+  <div id="friendsSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-semibold text-green-800">Farmer Friends Network</h2>
+        <div class="flex gap-4">
+          <button onclick="hideFriendsSection()" class="text-green-600 hover:text-green-700 font-medium">← Back to Dashboard</button>
+          <button onclick="showAddFriendModal()" class="bg-green-700 text-white px-6 py-2 rounded-3xl font-medium">+ Add New Friend Farmer</button>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <input id="friendSearch" type="text" placeholder="Search farmers by name or ID..." 
+          onkeyup="searchFriends()" 
+          class="w-full p-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-green-600">
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6" id="friendsList">
+        <!-- Dynamic friends added here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Friend Modal -->
+  <div id="addFriendModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[300]">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8">
+      <h2 class="text-2xl font-semibold mb-6">Add New Farmer Friend</h2>
+      <input id="friendIdInput" type="text" placeholder="Enter Farmer Unique ID" 
+        class="w-full p-4 border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-green-600">
+      <input id="friendNameInput" type="text" placeholder="Enter Friend's Name" 
+        class="w-full p-4 border border-gray-300 rounded-2xl mb-6 focus:outline-none focus:border-green-600">
+      <div class="flex gap-4">
+        <button onclick="hideAddFriendModal()" class="flex-1 py-4 border border-gray-300 rounded-3xl font-medium">Cancel</button>
+        <button onclick="addNewFriend()" class="flex-1 py-4 bg-green-700 text-white rounded-3xl font-semibold">Add Friend</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Backup Reply Modal -->
+  <div id="backupReplyModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[500]">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 mx-4">
+      <div class="text-center">
+        <div class="text-6xl mb-4">💬</div>
+        <h2 class="text-2xl font-semibold mb-4">Backup Request Reply</h2>
+        <p id="backupReplyMessage" class="text-gray-700 mb-6"></p>
+        <button onclick="closeBackupReplyModal()" class="bg-green-700 text-white px-8 py-3 rounded-3xl font-semibold">OK</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    let listings = [];
+    let friends = [];
+    let stocks = { Coconut: 120, Tomato: 850, Banana: 600, Onion: 450, Potato: 720 };
+
+    function getFarmerKey(prefix) {
+      const uid = localStorage.getItem('currentFarmerUid') || localStorage.getItem('farmerUid') || 'default';
+      return `${prefix}_${uid}`;
+    }
+
+    function getFarmerListings() {
+      return JSON.parse(localStorage.getItem(getFarmerKey('vayalFarmerListings')) || '[]');
+    }
+
+    function saveFarmerListings(data) {
+      localStorage.setItem(getFarmerKey('vayalFarmerListings'), JSON.stringify(data));
+    }
+
+    function getFarmerFriends() {
+      return JSON.parse(localStorage.getItem(getFarmerKey('vayalFarmerFriends')) || '[]');
+    }
+
+    function saveFarmerFriends(data) {
+      localStorage.setItem(getFarmerKey('vayalFarmerFriends'), JSON.stringify(data));
+    }
+
+    function getEmoji(produce) {
+      const map = { Coconut: "🥥", Tomato: "🍅", Banana: "🍌", Onion: "🧅", Potato: "🥔", Mango: "🥭", Brinjal: "🍆" };
+      return map[produce] || "🌿";
+    }
+
+    
+    function renderStocks() {
+      const container = document.getElementById('stocksContainer');
+      const farmerData = window.currentFarmerData || {};
+      
+      // Show only crops from onboarding
+      if (!farmerData.crops || farmerData.crops.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No crops to display yet. Complete your onboarding to see crops!</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      const cropEmojis = {
+        'Rice': '🍚', 'Coconut': '🥥', 'Sugarcane': '🍯', 'Mango': '🥭',
+        'Banana': '🍌', 'Tomato': '🍅', 'Onion': '🧅', 'Potato': '🥔',
+        'Spinach': '🥬', 'Carrot': '🥕', 'Cabbage': '🥬', 'Brinjal': '🍆',
+        'Pepper': '🌶️', 'Coriander': '🌿', 'Turmeric': '🌾', 'Ginger': '🌾',
+        'Milk': '🥛', 'Honey': '🍯', 'Flowers': '🌸', 'Other': '🌿'
+      };
+
+      farmerData.crops.forEach(crop => {
+        const emoji = cropEmojis[crop.name] || '🌿';
+        const div = document.createElement('div');
+        div.className = "bg-white rounded-3xl p-6 shadow-sm card-hover text-center";
+        div.innerHTML = `
+          <div class="text-5xl mb-3">${emoji}</div>
+          <p class="font-medium">${crop.name}</p>
+          <p class="text-2xl font-bold text-green-700 mt-1">${crop.quantity}</p>
+          <p class="text-xs text-gray-500">units</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+function renderListings() {
+  const container = document.getElementById('listingsContainer');
+  container.innerHTML = '';
+  
+  if (listings.length === 0) {
+    container.innerHTML = `<div class="col-span-3 text-center py-16 text-gray-500">No active listings yet.<br>Click "Sell New Item" to start 🌱</div>`;
+    document.getElementById('activeCount').textContent = '0';
+    document.getElementById('activeCountSmall').textContent = '';
+    return;
+  }
+
+  document.getElementById('activeCount').textContent = listings.length;
+  document.getElementById('activeCountSmall').textContent = `${listings.length} active`;
+
+  listings.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = "bg-white rounded-3xl p-6 shadow-sm card-hover relative";
+
+    card.innerHTML = `
+      <!-- Cancel button at top right -->
+      <button onclick="cancelListing(${index}); event.stopImmediatePropagation()" 
+        class="absolute top-4 right-4 text-red-500 hover:text-red-600 text-sm font-medium">
+        Cancel
+      </button>
+
+      <div class="text-6xl mb-4 text-center">${getEmoji(item.produce)}</div>
+      <h3 class="font-semibold text-xl text-center">${item.produce}</h3>
+      <p class="text-green-600 text-center font-medium mt-1">${item.quantity} ${item.unit} • ₹${item.sellingPrice}</p>
+      <p class="text-xs text-gray-400 text-center mt-4">Listed: ${item.date}</p>
+      
+      <!-- Add Backup Plan button at bottom -->
+      <button onclick="addBackupPlan(${index}); event.stopImmediatePropagation()" 
+        class="mt-6 w-full py-3 text-sm font-medium text-red-600 border border-red-200 rounded-3xl hover:bg-red-50">
+        Add Backup Plan
+      </button>
+    `;
+    container.appendChild(card);
+  });
+}
+   function cancelListing(index) {
+  if (confirm("Cancel this listing?")) {
+    const listing = listings[index];
+    const farmerData = window.currentFarmerData || {};
+    
+    // Add back quantity to crops
+    const cropIndex = farmerData.crops?.findIndex(c => c.name === listing.produce);
+    if (cropIndex !== -1 && farmerData.crops[cropIndex]) {
+      farmerData.crops[cropIndex].quantity += listing.quantity;
+    }
+    
+    listings.splice(index, 1);
+    
+    // Save updated data
+    saveFarmerListings(listings);
+    localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+    
+    renderListings();
+    renderStocks();
+    displayFarmDetails();
+    alert("Listing cancelled successfully. Stock quantity restored.");
+  }
+}
+
+function addBackupPlan(index) {
+  // Close any open sections and open Farmer Friends
+  document.getElementById('friendsSection').classList.remove('hidden');
+  renderFriendsList();
+  
+  // Optional: scroll to friends section smoothly
+  document.getElementById('friendsSection').scrollIntoView({ behavior: "smooth" });
+  
+  alert("Opened Farmer Friends Network.\nSelect a friend and request backup stock.");
+}
+
+    function showSellModal() {
+      document.getElementById('sellModal').classList.remove('hidden');
+      document.getElementById('quantity').value = '';
+      document.getElementById('sellingPrice').value = '';
+      document.getElementById('aiPrice').textContent = '₹ —';
+       document.getElementById('marketPrice').textContent = 'Current Market: ₹ — / Kg';
+      
+      // Populate produce dropdown from farmer's crops
+      const farmerData = window.currentFarmerData || {};
+      const produceDropdown = document.getElementById('produceType');
+      produceDropdown.innerHTML = '<option value="">Select Produce from Your Stock</option>';
+      
+      if (farmerData.crops && farmerData.crops.length > 0) {
+        farmerData.crops.forEach(crop => {
+          const cropEmojis = {
+            'Rice': '🍚', 'Coconut': '🥥', 'Sugarcane': '🍯', 'Mango': '🥭',
+            'Banana': '🍌', 'Tomato': '🍅', 'Onion': '🧅', 'Potato': '🥔',
+            'Spinach': '🥬', 'Carrot': '🥕', 'Cabbage': '🥬', 'Brinjal': '🍆',
+            'Pepper': '🌶️', 'Coriander': '🌿', 'Turmeric': '🌾', 'Ginger': '🌾',
+            'Milk': '🥛', 'Honey': '🍯', 'Flowers': '🌸', 'Other': '🌿'
+          };
+          const emoji = cropEmojis[crop.name] || '🌿';
+          const option = document.createElement('option');
+          option.value = crop.name;
+          option.textContent = `${emoji} ${crop.name} (${crop.quantity} units available)`;
+          produceDropdown.appendChild(option);
+        });
+      } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = '❌ No crops in your farm - Complete onboarding first';
+        option.disabled = true;
+        produceDropdown.appendChild(option);
+      }
+    }
+function renderFriendsList() {
+  const container = document.getElementById('friendsList');
+  const friends = JSON.parse(localStorage.getItem('vayalFarmerFriends') || '[]');
+  
+  if (friends.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-2 bg-white border border-green-100 rounded-3xl p-12 text-center">
+        <div class="text-6xl mb-4">👥</div>
+        <p class="text-gray-600 font-medium">No farmer friends added yet</p>
+        <p class="text-sm text-green-600 mt-2">Click "Add New Friend Farmer" button above to start building your network</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = friends.map(f => `
+    <div class="bg-white border border-gray-100 rounded-3xl p-6 card-hover">
+      <div class="flex justify-between">
+        <div>
+          <p class="font-semibold">👨‍🌾 ${f.name} ${f.verified ? '✅' : ''}</p>
+          <p class="text-sm text-gray-500">${f.id} • ${f.location || 'Location unknown'}</p>
+          <p class="text-xs ${f.verified ? 'text-green-600' : 'text-red-600'}">${f.verified ? 'Verified Farmer' : 'Not Verified'}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-green-600">🟢 Connected</p>
+          <p class="text-xs text-gray-500">${f.distance || '—'}</p>
+        </div>
+      </div>
+      <button onclick="requestBackup('${f.name}')" class="mt-6 w-full py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-3xl font-medium text-sm">💬 Ask for Backup Stock</button>
+    </div>
+  `).join('');
+}
+    function hideSellModal() {
+      document.getElementById('sellModal').classList.add('hidden');
+    }
+
+    document.getElementById('produceType').addEventListener('change', function() {
+      const prices = { Coconut: {ai:28, market:25}, Tomato: {ai:42, market:38}, Banana: {ai:35, market:32}, Mango: {ai:68, market:60}, Brinjal: {ai:48, market:45} };
+      const data = prices[this.value] || {ai:40, market:35};
+      document.getElementById('aiPrice').innerHTML = `₹${data.ai} <span class="text-base font-normal">(Recommended)</span>`;
+      document.getElementById('marketPrice').textContent = `Current Market: ₹${data.market} / Kg`;
+      document.getElementById('sellingPrice').value = data.ai;
+    });
+
+    function addNewListing() {
+      const produce = document.getElementById('produceType').value;
+      let quantity = parseFloat(document.getElementById('quantity').value);
+      const unit = document.getElementById('unit').value;
+      const sellingPrice = document.getElementById('sellingPrice').value;
+      const description = document.getElementById('description').value.trim();
+
+      if (!produce || !quantity || !sellingPrice) {
+        alert("❌ Please fill Produce, Quantity and Selling Price");
+        return;
+      }
+
+      const farmerData = window.currentFarmerData || {};
+      const cropIndex = farmerData.crops?.findIndex(c => c.name === produce);
+      
+      if (cropIndex === -1 || !farmerData.crops[cropIndex]) {
+        alert("❌ Crop not found in your farm");
+        return;
+      }
+
+      if (farmerData.crops[cropIndex].quantity < quantity) {
+        alert(`❌ Not enough stock! You have ${farmerData.crops[cropIndex].quantity} ${unit} remaining.`);
+        return;
+      }
+
+      // Reduce quantity from crops
+      farmerData.crops[cropIndex].quantity -= quantity;
+      
+      // Add to listings
+      listings.unshift({
+        produce: produce,
+        quantity: quantity,
+        unit: unit,
+        sellingPrice: sellingPrice,
+        description: description,
+        date: new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short'})
+      });
+
+      // Save updated data
+      saveFarmerListings(listings);
+      localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+      
+      hideSellModal();
+      renderListings();
+      renderStocks();
+      displayFarmDetails();
+      alert(`✅ Listed Successfully! ${produce} (${quantity} ${unit})\n📍 Your produce is now visible to nearby buyers.`);
+    }
+ function markAsUnavailable(btn, index) {
+      toggleSideMenu();
+      showFarmerFriends();
+      setTimeout(() => {
+        alert("You are now in Farmer Friends Network.\nSelect a friend and send help request for backup stock.");
+      }, 600);
+    }
+
+    function hideBankSection() {
+      document.getElementById('bankSection').classList.add('hidden');
+    }
+
+    function showFarmDetails() {
+      toggleSideMenu();
+      displayFarmDetails();
+      document.getElementById('farmDetailsSection').classList.remove('hidden');
+    }
+
+    function hideFarmDetails() {
+      document.getElementById('farmDetailsSection').classList.add('hidden');
+    }
+
+    function displayFarmDetails() {
+      const farmerData = window.currentFarmerData || {};
+      
+      // CONDENSED VIEW - Only show essential farm summary in BOTH sidebar and farm details section
+      
+      // Land details
+      document.getElementById('farmLandSize').textContent = farmerData.landAcres || '0';
+      document.getElementById('farmVillage').textContent = farmerData.village || 'Coimbatore';
+      
+      // Also update side menu with condensed info
+      document.getElementById('sideMenuLandSize').textContent = farmerData.landAcres || '0';
+      document.getElementById('sideMenuLocation').textContent = farmerData.village || 'Coimbatore';
+      
+      // Deliverers - show count only
+      document.getElementById('farmDeliverers').textContent = farmerData.deliverers || '0';
+      document.getElementById('sideMenuDeliverers').textContent = (farmerData.deliverers || '0') + ' Active';
+      
+      // Vehicles - show in table format
+      const vehiclesContainer = document.getElementById('farmVehiclesContainer');
+      const vehiclesTableBody = document.getElementById('farmVehiclesTableBody');
+      vehiclesTableBody.innerHTML = '';
+      if (farmerData.vehicles && farmerData.vehicles.length > 0) {
+        farmerData.vehicles.forEach(vehicle => {
+          const row = document.createElement('tr');
+          row.className = 'border-t border-green-100';
+          row.innerHTML = `
+            <td class="px-4 py-2 text-sm text-gray-700">${vehicle.type}</td>
+            <td class="px-4 py-2 text-sm text-gray-700">${vehicle.count}</td>
+          `;
+          vehiclesTableBody.appendChild(row);
+        });
+      } else {
+        vehiclesTableBody.innerHTML = '<tr><td colspan="2" class="px-4 py-2 text-sm text-gray-500 text-center">No vehicles recorded</td></tr>';
+      }
+      
+      // Update side menu main crops
+      if (farmerData.crops && farmerData.crops.length > 0) {
+        const cropNames = farmerData.crops.map(c => c.name).slice(0, 3).join(', ');
+        document.getElementById('sideMenuCrops').textContent = cropNames + (farmerData.crops.length > 3 ? '...' : '');
+      } else {
+        document.getElementById('sideMenuCrops').textContent = 'No crops yet';
+      }
+      
+      // HIDE crops and bank details sections in farm details panel
+      const cropsContainer = document.getElementById('farmCropsContainer');
+      if (cropsContainer) cropsContainer.parentElement.parentElement.style.display = 'none';
+      
+      const bankSection = document.querySelector('[id*="farmAccount"]')?.closest('div');
+      if (bankSection) {
+        let parent = bankSection.parentElement;
+        while (parent && parent.tagName !== 'DIV') parent = parent.parentElement;
+        if (parent) parent.style.display = 'none';
+      }
+    }
+
+    function showOrderHistory() {
+      toggleSideMenu();
+      document.getElementById('orderHistorySection').classList.remove('hidden');
+    }
+
+    
+    function showDelivererDetails() {
+      toggleSideMenu();
+      renderDeliverers();
+      document.getElementById('delivererSection').classList.remove('hidden');
+    }
+
+    function renderDeliverers() {
+      const farmerData = window.currentFarmerData || {};
+      const container = document.querySelector('#delivererSection .grid');
+      container.innerHTML = '';
+
+      const delivererCount = Number(farmerData.deliverers || 0);
+      const vehicleCount = Array.isArray(farmerData.vehicles) ? farmerData.vehicles.length : 0;
+      const vehicles = Array.isArray(farmerData.vehicles) ? farmerData.vehicles : [];
+      const statuses = ['Available', 'On Delivery', 'Resting'];
+      const baseLocation = farmerData.village || 'Coimbatore';
+
+      // Build deliverer detail records exactly as farmer entered
+      farmerData.delivererDetails = [];
+      for (let i = 0; i < delivererCount; i++) {
+        const vehicle = vehicles[i] || { type: 'Motorcycle', count: 1 };
+        const fuel = vehicle.type.toLowerCase().includes('motor') ? `${Math.floor(Math.random() * 40) + 60}%` : `${Math.floor(Math.random() * 30) + 70}%`;
+
+        farmerData.delivererDetails.push({
+          id: `DEL-${farmerData.uid?.split('-')[1] || 'XXXX'}-${String(i + 1).padStart(3, '0')}`,
+          name: `🚚 Deliverer ${i + 1}`,
+          phone: farmerData.phone || `+91 90000${String(i + 1).padStart(3, '0')}`,
+          vehicle: `${vehicle.type || 'Motorcycle'} (${vehicle.count || 1})`, 
+          fuel,
+          liveLocation: `${baseLocation} (${i + 1})`, 
+          status: statuses[i % statuses.length],
+          rating: (4.0 + Math.random() * 1.0).toFixed(1),
+          lastUpdated: new Date().toLocaleTimeString()
+        });
+      }
+
+      // Deliverer card/table
+      const delivererCard = document.createElement('div');
+      delivererCard.className = 'bg-white border border-green-100 rounded-3xl shadow-lg p-6 mb-5 transform hover:-translate-y-1 transition';
+      delivererCard.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-green-800">🚚 Deliverers (${delivererCount})</h3>
+          <span class="text-xs text-gray-500">Real-time fleet</span>
+        </div>
+      `;
+
+      if (delivererCount === 0) {
+        delivererCard.innerHTML += '<p class="text-gray-500">No deliverers added yet. Set deliverer count in Land Details.</p>';
+      } else {
+        const delivererTable = document.createElement('table');
+        delivererTable.className = 'w-full text-left border border-green-200 rounded-2xl overflow-hidden';
+        delivererTable.innerHTML = `
+          <thead class="bg-green-50">
+            <tr>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">ID</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Name</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Vehicle</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Fuel</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Location</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Status</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Rating</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Updated</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+
+        const delivererBody = delivererTable.querySelector('tbody');
+        farmerData.delivererDetails.forEach(item => {
+          const row = document.createElement('tr');
+          row.className = 'border-t border-green-100 hover:bg-green-50 transition';
+          row.innerHTML = `
+            <td class="px-2 py-2 text-xs text-gray-700">${item.id}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${item.name}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${item.vehicle}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${item.fuel}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${item.liveLocation}</td>
+            <td class="px-2 py-2 text-xs font-medium ${item.status === 'Available' ? 'text-green-600' : item.status === 'On Delivery' ? 'text-blue-600' : 'text-gray-500'}">${item.status}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">⭐ ${item.rating}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${item.lastUpdated}</td>
+          `;
+          delivererBody.appendChild(row);
+        });
+        delivererCard.appendChild(delivererTable);
+      }
+
+      // Vehicles card/table
+      const vehicleCard = document.createElement('div');
+      vehicleCard.className = 'bg-white border border-green-100 rounded-3xl shadow-lg p-6 transform hover:-translate-y-1 transition';
+      vehicleCard.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-green-800">🛵 Vehicles (${vehicleCount})</h3>
+          <span class="text-xs text-gray-500">Farmer input</span>
+        </div>
+      `;
+
+      if (vehicleCount === 0) {
+        vehicleCard.innerHTML += '<p class="text-gray-500">No vehicles recorded yet. Add them in Land Details.</p>';
+      } else {
+        const vehicleTable = document.createElement('table');
+        vehicleTable.className = 'w-full text-left border border-green-200 rounded-2xl overflow-hidden';
+        vehicleTable.innerHTML = `
+          <thead class="bg-green-50">
+            <tr>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">#</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Type</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Count</th>
+              <th class="px-2 py-2 text-xs font-semibold text-green-700">Emoji</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+
+        const vehicleBody = vehicleTable.querySelector('tbody');
+        vehicles.forEach((v, idx) => {
+          const type = v.type || 'Motorcycle';
+          const count = v.count || 1;
+          let emo = '🏍️';
+          if (type.toLowerCase().includes('van')) emo = '🚐';
+          else if (type.toLowerCase().includes('tractor')) emo = '🚜';
+          else if (type.toLowerCase().includes('truck') || type.toLowerCase().includes('lorry')) emo = '🚛';
+          else if (type.toLowerCase().includes('car')) emo = '🚗';
+          else if (type.toLowerCase().includes('bike')) emo = '🏍️';
+
+          const row = document.createElement('tr');
+          row.className = 'border-t border-green-100 hover:bg-green-50 transition';
+          row.innerHTML = `
+            <td class="px-2 py-2 text-xs text-gray-700">${idx + 1}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${type}</td>
+            <td class="px-2 py-2 text-xs text-gray-700">${count}</td>
+            <td class="px-2 py-2 text-xs">${emo}</td>
+          `;
+          vehicleBody.appendChild(row);
+        });
+
+        vehicleCard.appendChild(vehicleTable);
+      }
+
+      container.appendChild(delivererCard);
+      container.appendChild(vehicleCard);
+
+      localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+    }
+
+    function hideDelivererDetails() {
+      document.getElementById('delivererSection').classList.add('hidden');
+    }
+
+    function showFarmerFriends() {
+      toggleSideMenu();
+      friends = getFarmerFriends();
+      document.getElementById('friendSearch').value = '';
+      renderFriendsList();
+      document.getElementById('friendsSection').classList.remove('hidden');
+    }
+
+    function hideFriendsSection() {
+      document.getElementById('friendsSection').classList.add('hidden');
+    }
+
+    function renderFriendsList(filteredFriends = friends) {
+      const container = document.getElementById('friendsList');
+      container.innerHTML = '';
+      filteredFriends.forEach(friend => {
+        const div = document.createElement('div');
+        div.className = "bg-white border border-green-100 rounded-3xl p-6 card-hover";
+        div.innerHTML = `
+          <div class="flex justify-between">
+            <div>
+              <p class="font-semibold">${friend.name}</p>
+              <p class="text-xs text-gray-500">${friend.id} • ${friend.location}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs ${friend.status === 'Online' ? 'text-green-600' : 'text-gray-400'}">${friend.status}</p>
+              <p class="text-xs text-gray-500">${friend.distance}</p>
+              <p class="text-xs ${friend.verified ? 'text-green-600' : 'text-red-500'}">${friend.verified ? '✅ Verified' : '❌ Not Verified'}</p>
+            </div>
+          </div>
+          <button onclick="sendHelpRequest('${friend.name}')" 
+            class="mt-6 w-full py-3 bg-green-100 text-green-700 rounded-3xl font-medium text-sm">Ask for Backup Stock</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+    
+
+    function searchFriends() {
+      const searchTerm = document.getElementById('friendSearch').value.toLowerCase();
+      const filtered = friends.filter(f => 
+        f.name.toLowerCase().includes(searchTerm) || 
+        f.id.toLowerCase().includes(searchTerm)
+      );
+      renderFriendsList(filtered);
+    }
+
+    function sendHelpRequest(name) {
+      const farmerId = localStorage.getItem('farmerId') || 'FARM-12345678';
+      
+      fetch('http://localhost:3000/api/farmer/backup-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ farmerId, friendName: name })
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          return response.text().then(text => { throw new Error(`HTTP ${response.status}: ${text}`); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+          alert(`Help request sent to ${name}!\n\n"I need urgent backup stock for my listing. Can you help?"\n\nThey will reply soon.`);
+          
+          // Show reply after 5 seconds
+          setTimeout(() => {
+            showBackupReply(name);
+          }, 5000);
+        } else {
+          alert('Failed to send backup request: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Backup request error:', error);
+        alert('Error sending backup request:\n\n' + error.message + '\n\nMake sure the server is running on port 3000');
+      });
+    }
+
+    function showAddFriendModal() {
+      document.getElementById('addFriendModal').classList.remove('hidden');
+      document.getElementById('friendIdInput').value = '';
+      document.getElementById('friendNameInput').value = '';
+    }
+
+    function hideAddFriendModal() {
+      document.getElementById('addFriendModal').classList.add('hidden');
+    }
+
+    function addNewFriend() {
+      const id = document.getElementById('friendIdInput').value.trim();
+      const name = document.getElementById('friendNameInput').value.trim();
+
+      if (!id || !name) {
+        alert("Please enter both Farmer ID and Name");
+        return;
+      }
+
+      friends.push({
+        id: id,
+        name: name,
+        location: "Nearby Area",
+        distance: "Unknown",
+        status: "Online",
+        verified: Math.random() > 0.5 // Random verification status for demo
+      });
+
+      saveFarmerFriends(friends);
+      hideAddFriendModal();
+      renderFriendsList();
+      alert(`Friend "${name}" added successfully!\nYou can now ask them for backup stock.`);
+    }
+
+    function showBackupReply(name) {
+      const farmerData = window.currentFarmerData || {};
+      const userName = farmerData.name || 'User';
+      
+      // Get user's crops for more relevant replies
+      const userCrops = farmerData.crops || [];
+      const cropNames = userCrops.length > 0 ? userCrops.map(c => c.name).join(', ') : 'produce';
+      
+      // Simulate random reply with user's context
+      const replies = [
+        `Yeah I have the stock (${cropNames}) I'll send you ${userName}`,
+        `Sorry I don't have stock right now, ${userName}`,
+        `Yes, I can help with ${cropNames} stock. Sending now to ${userName}.`,
+        `I have ${cropNames} available. How much do you need, ${userName}?`,
+        `Great timing! I have fresh ${cropNames} ready. On my way, ${userName}!`
+      ];
+      const randomReply = replies[Math.floor(Math.random() * replies.length)];
+      
+      document.getElementById('backupReplyMessage').textContent = `From ${name}: ${randomReply}`;
+      document.getElementById('backupReplyModal').classList.remove('hidden');
+      
+      // Add to notifications
+      addNotification(`Backup reply from ${name}`, randomReply);
+    }
+
+    function closeBackupReplyModal() {
+      document.getElementById('backupReplyModal').classList.add('hidden');
+    }
+
+    // Notifications removed from UI; no-op functions kept for backward safety
+    function showNotifications() {
+      return;
+    }
+
+    function addNotification(title, message) {
+      return;
+    }
+
+    function renderNotifications() {
+      return;
+    }
+
+    function updateNotificationBadge() {
+      return;
+    }
+
+    function toggleSideMenu() {
+      document.getElementById('sideMenu').classList.toggle('open');
+    }
+
+    function showHintModal() {
+      document.getElementById('hintModal').classList.remove('hidden');
+      currentHintStep = 0;
+      updateHintStep();
+    }
+
+    function closeHintModal() {
+      document.getElementById('hintModal').classList.add('hidden');
+    }
+
+    let currentHintStep = 0;
+    const hintSteps = [
+      { emoji: '📦', title: 'Step 1: Sell in 3 Clicks', desc: 'Click "Sell New Item" to list your produce. Fill details and add to market instantly!' },
+      { emoji: '📊', title: 'Step 2: Track Orders & Stock', desc: 'Monitor your listings, orders, and stock levels in real-time from the dashboard.' },
+      { emoji: '🤝', title: 'Step 3: Connect to Buyers', desc: 'Use the call feature to connect directly with buyers for negotiations.' },
+      { emoji: '💰', title: 'Step 4: Fast UPI Receipts', desc: 'Receive payments instantly via UPI. Check your payment history anytime.' }
+    ];
+
+    function updateHintStep() {
+      const step = hintSteps[currentHintStep];
+      document.getElementById('hintStep').innerHTML = `
+        <div class="text-4xl mb-4 animate-pulse">${step.emoji}</div>
+        <h3 class="text-xl font-semibold">${step.title}</h3>
+        <p class="text-gray-600">${step.desc}</p>
+      `;
+    }
+
+    function nextHintStep() {
+      currentHintStep++;
+      if (currentHintStep >= hintSteps.length) {
+        closeHintModal();
+        return;
+      }
+      updateHintStep();
+    }
+
+    function showBankDetails() {
+  toggleSideMenu();
+  hideAllSections();
+  document.getElementById('bankSection').classList.remove('hidden');
+  renderTransactions();   // This will show the 2 transactions
+}
+    function hideAllSections() {
+  const sections = ['bankSection', 'orderHistorySection', 'delivererSection', 'friendsSection', 'landDetailsSection'];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+}
+    function showLandDetails() {
+      toggleSideMenu();
+      hideAllSections();
+      renderLandDetails();
+      document.getElementById('landDetailsSection').classList.remove('hidden');
+    }
+
+    function hideLandDetails() {
+      document.getElementById('landDetailsSection').classList.add('hidden');
+    }
+
+    function renderLandDetails() {
+      const farmerData = window.currentFarmerData || {};
+      
+      document.getElementById('landSize').textContent = farmerData.landAcres || '0';
+      document.getElementById('landLocation').textContent = farmerData.village || 'Coimbatore';
+      document.getElementById('landDeliverers').textContent = farmerData.deliverers || '0';
+      
+      // Render crops
+      const cropsContainer = document.getElementById('landCropsContainer');
+      if (farmerData.crops && farmerData.crops.length > 0) {
+        cropsContainer.innerHTML = farmerData.crops.map(crop => `
+          <div class="bg-green-50 p-4 rounded-2xl">
+            <p class="font-semibold text-green-800">${crop.name}</p>
+            <p class="text-sm text-gray-600">${crop.quantity} ${crop.unit} available</p>
+          </div>
+        `).join('');
+      } else {
+        cropsContainer.innerHTML = '<div class="text-center p-6 bg-gray-50 rounded-2xl"><p class="text-gray-500">No crops recorded yet</p></div>';
+      }
+      
+      // Render vehicles
+      const vehiclesContainer = document.getElementById('landVehiclesContainer');
+      if (farmerData.vehicles && farmerData.vehicles.length > 0) {
+        vehiclesContainer.innerHTML = farmerData.vehicles.map(vehicle => 
+          `<p class="text-sm text-green-700">• ${vehicle.type || 'Unknown'} (${vehicle.count || 1})</p>`
+        ).join('');
+      } else {
+        vehiclesContainer.innerHTML = '<p class="text-gray-500 text-sm">No vehicles recorded</p>';
+      }
+      
+      // Document verification status
+      const docStatus = document.getElementById('landDocumentsStatus');
+      if (farmerData.landDocuments && farmerData.landDocuments.length > 0) {
+        docStatus.innerHTML = `
+          <p class="text-green-700">✅ Land documents verified</p>
+          <p class="text-sm text-gray-600">Your land ownership is confirmed</p>
+          <div class="mt-4 space-y-2">
+            ${farmerData.landDocuments.map(doc => `
+              <div class="bg-green-50 p-3 rounded-xl">
+                <p class="text-sm font-medium text-green-800">${doc.type.replace('_', ' ').toUpperCase()}</p>
+                <p class="text-xs text-gray-600">${doc.name}</p>
+                <p class="text-xs text-gray-500">Uploaded: ${new Date(doc.uploadedAt).toLocaleDateString()}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        docStatus.innerHTML = `
+          <p class="text-yellow-700">⚠️ Land documents not verified. Upload proof to get verified badge.</p>
+          <button onclick="showVerificationModal()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-2xl font-medium mt-4">
+            📎 Upload Land Documents
+          </button>
+        `;
+      }
+    }
+
+    function editLandDetails() {
+      const farmerData = window.currentFarmerData || {};
+      
+      // Show edit modal
+      document.getElementById('editLandModal').classList.remove('hidden');
+      
+      // Pre-fill current values
+      document.getElementById('editLandSize').value = farmerData.landAcres || '';
+      document.getElementById('editLocation').value = farmerData.village || '';
+      document.getElementById('editDeliverers').value = farmerData.deliverers || '';
+      document.getElementById('editVehicles').value = (farmerData.vehicles && farmerData.vehicles.length) ? farmerData.vehicles.length : '0';
+      document.getElementById('editVehicleType').value = (farmerData.vehicles && farmerData.vehicles[0] && farmerData.vehicles[0].type) ? farmerData.vehicles[0].type : 'Motorcycle';
+    }
+
+    function saveLandDetails() {
+      const farmerData = window.currentFarmerData || {};
+      const newLandSize = parseFloat(document.getElementById('editLandSize').value);
+      const newLocation = document.getElementById('editLocation').value.trim();
+      const newDeliverers = parseInt(document.getElementById('editDeliverers').value);
+      const newVehicles = parseInt(document.getElementById('editVehicles').value);
+      
+      if (!newLandSize || newLandSize <= 0) {
+        alert('Please enter a valid land size');
+        return;
+      }
+      
+      if (!newLocation) {
+        alert('Please enter a location');
+        return;
+      }
+      
+      if (isNaN(newDeliverers) || newDeliverers < 0) {
+        alert('Please enter a valid number of deliverers');
+        return;
+      }
+      
+      if (isNaN(newVehicles) || newVehicles < 0) {
+        alert('Please enter a valid number of vehicles');
+        return;
+      }
+
+      const newVehicleType = document.getElementById('editVehicleType').value || 'Motorcycle';
+      
+      // Check if land details changed significantly
+      const landChanged = farmerData.landAcres !== newLandSize || farmerData.village !== newLocation;
+      
+      farmerData.landAcres = newLandSize;
+      farmerData.village = newLocation;
+      farmerData.deliverers = newDeliverers;
+      
+      // maintain vehicles object shape, default to basic if missing
+      if (!farmerData.vehicles || !Array.isArray(farmerData.vehicles)) {
+        farmerData.vehicles = [];
+      }
+      while (farmerData.vehicles.length < newVehicles) {
+        farmerData.vehicles.push({ type: newVehicleType, count: 1 });
+      }
+      while (farmerData.vehicles.length > newVehicles) {
+        farmerData.vehicles.pop();
+      }
+      
+      // Update all vehicle types to selected edit type
+      farmerData.vehicles = farmerData.vehicles.map(v => ({ ...v, type: newVehicleType }));
+      
+      // If land details changed, require re-verification
+      if (landChanged && farmerData.landDocuments && farmerData.landDocuments.length > 0) {
+        farmerData.landDocuments = []; // Clear documents, require re-upload
+        farmerData.verified = false;
+        alert("Land details changed. Please re-upload land documents for verification.");
+      }
+      
+      // Update localStorage
+      localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+      
+      // Update UI
+      renderLandDetails();
+      updateVerificationStatus();
+      
+      // Hide modal
+      document.getElementById('editLandModal').classList.add('hidden');
+      
+      alert("Land details updated successfully!");
+    }
+
+    function cancelEditLand() {
+      document.getElementById('editLandModal').classList.add('hidden');
+    }
+
+    function showVerificationModal() {
+      document.getElementById('verificationModal').classList.remove('hidden');
+    }
+
+    function hideVerificationModal() {
+      document.getElementById('verificationModal').classList.add('hidden');
+    }
+
+    function submitVerificationDocuments() {
+      const farmerData = window.currentFarmerData || {};
+      const documentType = document.getElementById('documentType').value;
+      const documentFile = document.getElementById('documentFile').files[0];
+      
+      if (!documentType) {
+        alert('Please select document type');
+        return;
+      }
+      
+      if (!documentFile) {
+        alert('Please select a document file');
+        return;
+      }
+      
+      // Simulate document upload
+      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(documentFile.type)) {
+        alert('Please upload a valid document (JPG, PNG, or PDF)');
+        return;
+      }
+      
+      if (documentFile.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('File size should be less than 5MB');
+        return;
+      }
+      
+      // Simulate upload process
+      alert('Uploading document... Please wait.');
+      
+      setTimeout(() => {
+        farmerData.landDocuments = farmerData.landDocuments || [];
+        farmerData.landDocuments.push({
+          type: documentType,
+          name: documentFile.name,
+          uploadedAt: new Date().toISOString()
+        });
+        farmerData.verified = true;
+        
+        localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+        
+        renderLandDetails();
+        updateVerificationStatus();
+        hideVerificationModal();
+        
+        alert("✅ Documents uploaded successfully!\n\nYour account is now verified with a trusted badge.");
+      }, 2000);
+    }
+
+    function updateVerificationStatus() {
+      const farmerData = window.currentFarmerData || {};
+      const container = document.getElementById('verificationContainer');
+      
+      if (farmerData.landDocuments && farmerData.landDocuments.length > 0) {
+        container.innerHTML = '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✅ Verified</span>';
+      } else {
+        container.innerHTML = '<button onclick="showVerificationModal()" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-2 py-1 rounded-full border border-yellow-300">🔒 To Verify</button>';
+      }
+    }
+
+    function showOrderHistory() {
+      toggleSideMenu();
+      document.getElementById('orderHistorySection').classList.remove('hidden');
+    }
+
+    function hideOrderHistory() {
+      document.getElementById('orderHistorySection').classList.add('hidden');
+    }
+
+    function showDelivererDetails() {
+      toggleSideMenu();
+      renderDeliverers();
+      document.getElementById('delivererSection').classList.remove('hidden');
+    }
+
+    function hideDelivererDetails() {
+      document.getElementById('delivererSection').classList.add('hidden');
+    }
+
+    function showFarmerFriends() {
+      toggleSideMenu();
+      friends = getFarmerFriends();
+      document.getElementById('friendSearch').value = '';
+      renderFriendsList();
+      document.getElementById('friendsSection').classList.remove('hidden');
+    }
+
+    function hideFriendsSection() {
+      document.getElementById('friendsSection').classList.add('hidden');
+    }
+
+    // Google Translate
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'ta,hi,te,bn,ml'}, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function handleLanguageSelectChange(value) {
+      const wrapper = document.getElementById('gt-wrapper');
+      const panel = document.getElementById('gt-panel');
+      if (!wrapper || !panel) return;
+
+      if (value === 'google') {
+        wrapper.classList.remove('hidden');
+        panel.classList.add('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+        panel.classList.add('hidden');
+      }
+    }
+
+    function setCookie(name, value, days) {
+      let cookie = `${name}=${value}; path=/;`;
+      if (typeof days === 'number') {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        cookie += ` expires=${expires};`;
+      }
+      document.cookie = cookie;
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      const panel = document.getElementById('gt-panel');
+      if (!selector || !wrapper || !panel) return;
+
+      const setUiState = (mode) => {
+        if (mode === 'google') {
+          wrapper.classList.remove('hidden');
+          panel.classList.add('hidden');
+        } else {
+          wrapper.classList.add('hidden');
+          panel.classList.add('hidden');
+        }
+      };
+
+      selector.addEventListener('change', (e) => {
+        const value = e.target.value;
+        setUiState(value);
+      });
+
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en' ? 'google' : 'en';
+      selector.value = mode;
+      handleLanguageSelectChange(mode);
+    }
+
+    window.onload = async () => {
+      await loadFarmerData();
+
+      // Guard: if onboarding incomplete, force onboarding page (prevents bad loop)
+      const farmerData = window.currentFarmerData || {};
+      if (!farmerData.onboardingComplete) {
+        console.log('onboarding incomplete on farm page; redirecting to onboarding.');
+        localStorage.setItem('vayalRegisteredFarmers', JSON.stringify({
+          ...(JSON.parse(localStorage.getItem('vayalRegisteredFarmers') || '{}')),
+          [localStorage.getItem('currentFarmerPhone') || '']: { ...farmerData, onboardingComplete: false }
+        }));
+        return window.location.replace('farmer-onboarding.html');
+      }
+
+      listings = getFarmerListings();
+      friends = getFarmerFriends();
+      renderListings();
+      renderStocks();
+      displayFarmDetails();
+      restoreTranslationFromStorage();
+      initializeLanguageSelector();
+
+      // Load Google Translate
+      const script = document.createElement('script');
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      document.head.appendChild(script);
+    };
+
+    // Render Payment Transactions based on farmer order history
+    function renderTransactions() {
+  const container = document.getElementById('transactionsContainer');
+  const farmerData = window.currentFarmerData || {};
+  const history = Array.isArray(farmerData.orderHistory) ? farmerData.orderHistory : [];
+
+  if (history.length === 0) {
+    container.innerHTML = '<p class="text-gray-500 text-center py-12">No payments recorded yet. Sell some produce to see live transactions.</p>';
+    return;
+  }
+
+  container.innerHTML = '';
+  history.slice(0, 2).forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'bg-white border border-green-100 rounded-3xl p-6 card-hover flex flex-col md:flex-row gap-6 items-start md:items-center';
+    row.innerHTML = `
+      <div class="flex-1 flex items-center gap-4">
+        <div class="text-5xl">${item.emoji || '🥥'}</div>
+        <div>
+          <p class="font-medium">${item.store || 'Buyer'}</p>
+          <p class="text-sm text-gray-500">${item.qty || item.quantity || ''} ${item.unit || ''} • ${item.orderId || 'ORD-XXXX'}</p>
+          <p class="text-xs text-gray-400">${item.method || 'UPI Payment'}</p>
+        </div>
+      </div>
+      <div class="text-right md:text-right">
+        <p class="text-3xl font-bold text-green-700">₹${item.amount || item.total || '0'}</p>
+        <p class="text-xs text-gray-500">${item.date || 'Unknown date'}</p>
+        <div class="mt-2 inline-flex items-center gap-1 px-4 py-1 ${item.status === 'In Transit' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'} text-sm rounded-2xl">
+          <span class="text-lg">✓</span> ${item.status || 'Payment Received'}
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+    const apiBase = 'http://localhost:3000';
+
+    function goBackHome() {
+      if (confirm("🏠 Go back to home page?")) {
+        window.location.href = 'home.html';
+      }
+    }
+
+    async function fetchFarmerFromBackend(phone) {
+      try {
+        const resp = await fetch(`${apiBase}/api/farmer/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data.farmer || null;
+      } catch (err) {
+        console.warn('Farmer backend fetch failed:', err.message);
+        return null;
+      }
+    }
+
+    async function loadFarmerData() {
+      // Load from localStorage or use defaults for new users
+      const uid = localStorage.getItem('currentFarmerUid');
+      let farmerData = {
+        name: 'New Farmer',
+        totalEarnings: 0,
+        ordersToday: 0,
+        rating: 'New',
+        village: 'Coimbatore',
+        orderHistory: [],
+        landAcres: 0,
+        crops: [],
+        deliverers: 0,
+        vehicles: [],
+        bankDetails: {},
+        onboardingComplete: false
+      };
+
+      if (uid) {
+        // Try to load from localStorage first
+        const saved = localStorage.getItem('farmerData_' + uid);
+        if (saved) {
+          farmerData = JSON.parse(saved);
+        }
+
+        const phone = localStorage.getItem('currentFarmerPhone') || localStorage.getItem('farmerPhone');
+        if (phone) {
+          const backendFarmer = await fetchFarmerFromBackend(phone);
+          if (backendFarmer) {
+            farmerData = { ...farmerData, ...backendFarmer };
+            localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+            localStorage.setItem('vayalRegisteredFarmers', JSON.stringify({ ...JSON.parse(localStorage.getItem('vayalRegisteredFarmers') || '{}'), [phone]: farmerData }));
+          }
+        }
+      }
+
+      window.currentFarmerData = farmerData;
+
+      // Update UI
+      const earningsEl = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-4 .bg-white.p-6:nth-child(1) p:nth-child(2)');
+      const ordersEl = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-4 .bg-white.p-6:nth-child(2) p:nth-child(2)');
+      if (earningsEl) earningsEl.textContent = '₹' + (farmerData.totalEarnings || 0).toLocaleString();
+      if (ordersEl) ordersEl.textContent = farmerData.ordersToday || 0;
+      
+      // Rating display - show rating only if reviews exist, otherwise show "No reviews"
+      const ratingElement = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-4 .bg-white.p-6:nth-child(4) p:nth-child(2)');
+      if (ratingElement) {
+        if (farmerData.reviews && farmerData.reviews.length > 0) {
+          ratingElement.textContent = (farmerData.rating || '0') + ' ★';
+        } else {
+          ratingElement.innerHTML = '⭐ <small class="text-lg">No reviews yet</small>';
+        }
+      }
+
+      const nameElement = document.querySelector('h1.lang-text');
+      if (nameElement) {
+        const hour = new Date().getHours();
+        let greeting = 'Good Morning';
+        if (hour >= 12 && hour < 17) greeting = 'Good Afternoon';
+        else if (hour >= 17) greeting = 'Good Evening';
+        nameElement.textContent = `${greeting}, ${farmerData.name}! 👋`;
+      }
+
+      // Update sidebar info from actual farmer profile fields
+      document.getElementById('sideMenuUserID').textContent = farmerData.uid || 'FARM-XXXX';
+      document.getElementById('sideMenuEmail').textContent = farmerData.email || farmerData.bankDetails?.email || 'farmer@example.com';
+      document.getElementById('sideMenuPhone').textContent = farmerData.phone || '+91 XXXXX XXXXX';
+      
+      // Update verification status
+      updateVerificationStatus();
+
+      // Show verified badge only if land documents are uploaded
+      const verifiedBadge = document.getElementById('verifiedBadge');
+      if (verifiedBadge && farmerData.landDocuments && farmerData.landDocuments.length > 0) {
+        verifiedBadge.classList.remove('hidden');
+      } else if (verifiedBadge) {
+        verifiedBadge.classList.add('hidden');
+      }
+
+      // Render order history for existing user
+      const orderHistory = farmerData.orderHistory || [];
+      const historyContainer = document.getElementById('orderHistoryCards');
+      historyContainer.innerHTML = '';
+
+      const displayOrders = orderHistory.slice(0, 2);
+      if (displayOrders.length === 0) {
+        historyContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No orders yet. Start selling to see your order history!</p>';
+      } else {
+        displayOrders.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'bg-white border border-green-100 rounded-3xl p-6 card-hover';
+          card.innerHTML = `
+            <div class="flex items-center gap-5">
+              <div class="text-5xl">${item.emoji || '🧑‍🌾'}</div>
+              <div class="flex-1">
+                <p class="font-medium">${item.store}</p>
+                <p class="text-sm text-gray-500">${item.date} • ${item.status}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-green-700">₹${item.amount}</p>
+                <p class="text-xs ${item.status === 'In Transit' ? 'text-amber-600' : 'text-green-600'}">${item.badge}</p>
+              </div>
+            </div>
+          `;
+          historyContainer.appendChild(card);
+        });
+      }
+    }
+  </script>
+
+  <!-- Hint Modal -->
+  <div id="hintModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[500]">
+    <div class="bg-white rounded-3xl max-w-lg w-full mx-4 p-8 text-center animate-bounce-in">
+      <div class="text-6xl mb-4">🌾</div>
+      <h2 class="text-2xl font-bold text-green-800 mb-6">Farmer Dashboard Guide</h2>
+      <div id="hintStep" class="space-y-4">
+        <div class="text-4xl mb-4 animate-pulse">📦</div>
+        <h3 class="text-xl font-semibold">Step 1: Sell in 3 Clicks</h3>
+        <p class="text-gray-600">Click "Sell New Item" to list your produce. Fill details and add to market instantly!</p>
+      </div>
+      <div class="mt-8 flex justify-between">
+        <button onclick="closeHintModal()" class="px-6 py-3 border border-gray-300 rounded-3xl font-medium">Skip</button>
+        <button onclick="nextHintStep()" class="px-6 py-3 bg-green-700 text-white rounded-3xl font-semibold">Next →</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Hidden Google Translate Element -->
+  <div id="google_translate_element" class="hidden"></div>
+
+</body>
+</html>

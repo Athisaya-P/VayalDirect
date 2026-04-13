@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buyer Dashboard - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 15px 25px -5px rgb(0 0 0 / 0.1); }
+    .side-menu { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+    .side-menu.open { transform: translateX(0); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-green-700 rounded-2xl flex items-center justify-center text-3xl">🌾</div>
+        <div>
+          <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+          <p class="text-xs text-green-600 -mt-1">Buyer Dashboard • Coimbatore</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+          <option value="google">🌐 More Languages</option>
+        </select>
+
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+
+        <button onclick="toggleSideMenu()" class="w-11 h-11 flex items-center justify-center text-3xl text-green-700 hover:bg-green-50 rounded-2xl transition">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hamburger Menu -->
+  <div id="sideMenu" class="side-menu fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-[300] p-8 overflow-y-auto">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-2xl font-semibold text-green-800">My Dashboard</h2>
+      <button onclick="toggleSideMenu()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
+    </div>
+
+    <!-- User ID, Email & Password -->
+    <div class="bg-green-50 rounded-3xl p-6 mb-10">
+      <div class="space-y-4 text-sm">
+        <div>
+          <p class="text-gray-500">Buyer Unique ID</p>
+          <p class="font-mono font-bold text-green-700">BUYER-COIM-6742</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Email</p>
+          <p class="font-medium">karthickfarmer@gmail.com</p>
+        </div>
+        <div>
+          <p class="text-gray-500">******</p>
+          <p class="font-medium">Vayal@2026</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="space-y-6">
+      <div onclick="showSection('cart')" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover flex items-center gap-4">
+        <span class="text-4xl">🛒</span>
+        <div><p class="font-semibold text-green-800">My Cart</p><p class="text-sm text-gray-500">Items ready to buy</p></div>
+      </div>
+      <div onclick="showSection('payment')" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover flex items-center gap-4">
+        <span class="text-4xl">💰</span>
+        <div><p class="font-semibold text-green-800">Payment Details</p><p class="text-sm text-gray-500">UPI & Transactions</p></div>
+      </div>
+      <div onclick="showSection('history')" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover flex items-center gap-4">
+        <span class="text-4xl">📦</span>
+        <div><p class="font-semibold text-green-800">Order History</p><p class="text-sm text-gray-500">Past purchases</p></div>
+      </div>
+      <div onclick="showSection('favourites')" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover flex items-center gap-4">
+        <span class="text-4xl">❤️</span>
+        <div><p class="font-semibold text-green-800">My Favourites</p><p class="text-sm text-gray-500">Trusted farmers</p></div>
+      </div>
+      <div onclick="showSection('tracking')" class="cursor-pointer bg-white border border-green-100 hover:border-green-300 rounded-3xl p-6 card-hover flex items-center gap-4">
+        <span class="text-4xl">🚚</span>
+        <div><p class="font-semibold text-green-800">Live Tracking</p><p class="text-sm text-gray-500">Current deliveries</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="text-center mb-10">
+      <p class="text-green-600 font-medium tracking-widest text-sm">LIVE LISTINGS</p>
+      <h1 class="text-4xl font-bold text-gray-900">Fresh Produce, Direct from Farmers</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="flex flex-wrap gap-4 mb-10">
+      <div class="flex-1 relative">
+        <input id="searchInput" onkeyup="filterListings()" type="text" placeholder="Search produce, farmer..." 
+               class="w-full pl-12 pr-6 py-4 bg-white border border-gray-200 rounded-3xl focus:outline-none focus:border-green-600">
+        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+      </div>
+      <select id="distanceFilter" onchange="filterListings()" class="px-6 py-4 bg-white border border-gray-200 rounded-3xl focus:outline-none focus:border-green-600">
+        <option value="">Any Distance</option>
+        <option value="10">Within 10 km</option>
+        <option value="30">Within 30 km</option>
+        <option value="50">Within 50 km</option>
+      </select>
+      <button onclick="filterListings()" class="px-8 py-4 bg-green-700 text-white rounded-3xl font-medium">Search</button>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="flex gap-3 mb-10 overflow-x-auto pb-2">
+      <button onclick="setCategory(this)" data-category="all" class="active-filter px-6 py-2.5 bg-green-700 text-white rounded-3xl font-medium whitespace-nowrap">All</button>
+      <button onclick="setCategory(this)" data-category="veg" class="px-6 py-2.5 bg-white border border-gray-200 hover:border-green-300 rounded-3xl font-medium whitespace-nowrap">🥕 Vegetables</button>
+      <button onclick="setCategory(this)" data-category="fruit" class="px-6 py-2.5 bg-white border border-gray-200 hover:border-green-300 rounded-3xl font-medium whitespace-nowrap">🍎 Fruits</button>
+      <button onclick="setCategory(this)" data-category="grain" class="px-6 py-2.5 bg-white border border-gray-200 hover:border-green-300 rounded-3xl font-medium whitespace-nowrap">🌾 Grains</button>
+      <button onclick="setCategory(this)" data-category="bulk" class="px-6 py-2.5 bg-white border border-gray-200 hover:border-green-300 rounded-3xl font-medium whitespace-nowrap">📦 Bulk</button>
+    </div>
+
+    <div id="listingsGrid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+  </div>
+
+  <!-- Call Modal -->
+  <div id="callModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[300]">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center">
+      <h2 class="text-2xl font-semibold mb-2">Connect with Farmer</h2>
+      <p id="modalFarmerName" class="text-green-700 font-medium text-lg"></p>
+      <p class="text-sm text-gray-500 mb-8">Real-time translation enabled</p>
+      <div class="grid grid-cols-2 gap-6">
+        <button onclick="makeVoiceCall()" class="py-10 bg-green-50 hover:bg-green-100 rounded-3xl flex flex-col items-center gap-3">
+          <span class="text-5xl">📞</span><span class="font-medium">Voice Call</span>
+        </button>
+        <button onclick="makeVideoCall()" class="py-10 bg-green-50 hover:bg-green-100 rounded-3xl flex flex-col items-center gap-3">
+          <span class="text-5xl">📹</span><span class="font-medium">Video Call</span>
+        </button>
+      </div>
+      <button onclick="closeCallModal()" class="mt-8 w-full py-4 border border-gray-300 rounded-3xl font-medium">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Item Detail Modal -->
+  <div id="itemDetailModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[300]">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-8">
+      <div class="flex justify-between mb-6">
+        <h2 id="detailName" class="text-2xl font-semibold"></h2>
+        <button onclick="closeItemDetail()" class="text-3xl text-gray-400">×</button>
+      </div>
+      <div id="detailContent" class="space-y-6"></div>
+      <button onclick="closeItemDetail()" class="mt-8 w-full py-4 border border-gray-300 rounded-3xl font-medium">Close</button>
+    </div>
+  </div>
+
+  <!-- My Cart Section -->
+  <div id="cartSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-semibold text-green-800 flex items-center gap-3"><span class="text-4xl">🛒</span> My Cart</h2>
+        <button onclick="hideAllSections()" class="text-green-600 font-medium">← Back</button>
+      </div>
+      <div id="cartItems" class="space-y-6"></div>
+      <div id="cartTotal" class="mt-10 bg-green-50 p-8 rounded-3xl text-2xl font-semibold text-green-800 text-center"></div>
+      <button onclick="proceedToCheckout()" class="w-full mt-6 py-5 bg-green-700 text-white rounded-3xl font-semibold text-lg">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- Checkout Modal with separate buttons -->
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[400]">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8">
+      <h2 class="text-2xl font-semibold text-center mb-8">Choose Payment Method</h2>
+      <div class="space-y-4">
+        <button onclick="placeOrder('Cash on Delivery')" class="w-full py-6 border-2 border-green-600 text-green-700 rounded-3xl font-medium flex items-center justify-center gap-3 text-lg">
+          💵 Cash on Delivery
+        </button>
+        <button onclick="placeOrder('GPay / UPI')" class="w-full py-6 border-2 border-green-600 text-green-700 rounded-3xl font-medium flex items-center justify-center gap-3 text-lg">
+          📱 GPay / UPI
+        </button>
+      </div>
+      <button onclick="closeCheckoutModal()" class="mt-6 w-full py-4 border border-gray-300 rounded-3xl font-medium">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Order Placed Success -->
+  <div id="orderSuccess" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[500]">
+    <div class="bg-white rounded-3xl max-w-md w-full p-10 text-center">
+      <div class="text-7xl mb-6">🎉</div>
+      <h2 class="text-3xl font-semibold text-green-800 mb-2">Order Placed Successfully!</h2>
+      <p class="text-gray-600 mb-8">Thank you for supporting local farmers 🌱</p>
+      <button onclick="downloadInvoice()" class="w-full py-4 bg-green-700 text-white rounded-3xl font-semibold mb-4">Download Invoice</button>
+      <button onclick="hideOrderSuccess()" class="w-full py-4 border border-gray-300 rounded-3xl font-medium">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Payment Section -->
+  <div id="paymentSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex justify-between mb-8"><h2 class="text-3xl font-semibold text-green-800 flex items-center gap-3"><span class="text-4xl">💰</span> Payment Details</h2><button onclick="hideAllSections()" class="text-green-600 font-medium">← Back</button></div>
+      <div class="bg-green-50 p-8 rounded-3xl space-y-8">
+        <div class="flex gap-6"><span class="text-5xl">📱</span><div><p class="font-medium">UPI ID</p><p class="text-green-700">priya.buyer@oksbi</p></div></div>
+        <div class="flex gap-6"><span class="text-5xl">🏦</span><div><p class="font-medium">Bank Account</p><p>State Bank of India • ****4242</p></div></div>
+        <div class="pt-6 border-t">
+          <p class="font-medium mb-4 flex items-center gap-2"><span class="text-2xl">📜</span> Recent Transactions</p>
+          <div class="space-y-4 text-sm">
+            <div class="flex justify-between bg-white p-4 rounded-2xl"><span>Tomatoes from Ravi Kumar • 20kg</span><span class="text-green-600">₹560 • 28 Mar</span></div>
+            <div class="flex justify-between bg-white p-4 rounded-2xl"><span>Coconuts from Karthick R • 50pcs</span><span class="text-green-600">₹1,250 • 27 Mar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order History -->
+  <div id="historySection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between mb-8"><h2 class="text-3xl font-semibold text-green-800 flex items-center gap-3"><span class="text-4xl">📦</span> Order History</h2><button onclick="hideAllSections()" class="text-green-600 font-medium">← Back</button></div>
+      <div class="space-y-6">
+        <div class="bg-white border border-green-100 p-6 rounded-3xl">
+          <p class="font-medium">Farm Tomatoes from Ravi Kumar • 20kg</p>
+          <p class="text-xs text-gray-500">28 Mar 2026 • ₹560 • ✅ Delivered</p>
+        </div>
+        <div class="bg-white border border-green-100 p-6 rounded-3xl">
+          <p class="font-medium">Coconuts from Karthick R • 50pcs</p>
+          <p class="text-xs text-gray-500">27 Mar 2026 • ₹1,250 • ✅ Delivered</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Favourites -->
+  <div id="favouritesSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between mb-8">
+        <h2 class="text-3xl font-semibold text-green-800 flex items-center gap-3"><span class="text-4xl">❤️</span> My Favourite Farmers</h2>
+        <button onclick="hideAllSections()" class="text-green-600 font-medium">← Back</button>
+      </div>
+      <input id="favSearch" onkeyup="filterFavourites()" placeholder="Search farmers or location..." class="w-full p-4 border border-gray-200 rounded-3xl mb-6">
+      <div id="favList" class="grid grid-cols-2 gap-6"></div>
+      <button onclick="addNewFriend()" class="mt-8 w-full py-4 border border-green-600 text-green-700 rounded-3xl font-medium flex items-center justify-center gap-2"><span class="text-2xl">+</span> Add New Farmer Friend</button>
+    </div>
+  </div>
+
+  <!-- Live Tracking -->
+  <div id="trackingSection" class="hidden fixed inset-0 bg-white z-[250] overflow-y-auto p-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between mb-8"><h2 class="text-3xl font-semibold text-green-800 flex items-center gap-3"><span class="text-4xl">🚚</span> Live Tracking</h2><button onclick="hideAllSections()" class="text-green-600 font-medium">← Back</button></div>
+      <div class="bg-green-50 rounded-3xl p-8">
+        <div class="flex justify-between mb-6">
+          <div><p class="font-medium">Order #VD-7842</p><p class="text-sm text-gray-500">30kg Farm Tomatoes from Ravi Kumar</p></div>
+          <div class="text-right"><p class="text-green-700 font-medium">On the way</p><p class="text-xs">Expected: 45 mins</p></div>
+        </div>
+        <div class="map-container h-80 rounded-3xl relative flex items-center justify-center">
+          <div class="text-center z-10">
+            <div class="text-6xl mb-4 map-dot">📍</div>
+            <p class="font-medium">Driver: Ravi Kumar • TN 37 AB 4521</p>
+            <p class="text-sm mt-2">Moving towards your location...</p>
+          </div>
+          <div class="absolute bottom-10 left-10 right-10 h-1 bg-green-400 rounded-full">
+            <div class="progress-bar w-3/4 h-full bg-green-600 rounded-full"></div>
+          </div>
+        </div>
+        <div class="mt-8 text-center text-sm text-gray-600">Current location: Near Gandhipuram • 8.2 km away</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cart = [];
+    let listings = [ /* same listings as before */ 
+      {id:1, emoji:"🍅", name:"Farm Tomatoes", farmer:"Ravi Kumar", location:"Erode", harvest:"Harvested today", qty:"200 kg", price:28, ai:30, type:"veg", tag:"ORGANIC", distance:8},
+      {id:2, emoji:"🥦", name:"Hill Broccoli", farmer:"Meena Devi", location:"Nilgiris", harvest:"Harvested yesterday", qty:"80 kg", price:60, ai:65, type:"veg", distance:35},
+      {id:3, emoji:"🍓", name:"Hill Strawberries", farmer:"Suresh P", location:"Kodaikanal", harvest:"Must sell today", qty:"40 kg", price:95, ai:120, type:"fruit", tag:"SOS", distance:120},
+      {id:4, emoji:"🌾", name:"Ponni Raw Rice", farmer:"Anitha M", location:"Coimbatore", harvest:"New stock", qty:"500 kg", price:42, ai:45, type:"grain", tag:"BULK", distance:12},
+      {id:5, emoji:"🌽", name:"Sweet Corn", farmer:"Anitha M", location:"Coimbatore", harvest:"Harvested today", qty:"300 cobs", price:35, ai:38, type:"veg", distance:8},
+      {id:6, emoji:"🥥", name:"Coconuts (Bulk)", farmer:"Karthick R", location:"Coimbatore", harvest:"Bulk discount", qty:"1000 pcs", price:25, ai:28, type:"bulk", distance:5},
+      {id:7, emoji:"🥭", name:"Alphonso Mango", farmer:"Selvam K", location:"Madurai", harvest:"Season peak", qty:"150 kg", price:85, ai:90, type:"fruit", tag:"ORGANIC", distance:180},
+      {id:8, emoji:"🥬", name:"Country Spinach", farmer:"Krishna S", location:"Tirunelveli", harvest:"Fresh morning", qty:"60 kg", price:22, ai:25, type:"veg", distance:250}
+    ];
+
+    let favourites = [
+      {name: "Karthick R", location: "Coimbatore", rating: "4.9"},
+      {name: "Anitha M", location: "Coimbatore", rating: "4.8"},
+      {name: "Selvam K", location: "Madurai", rating: "4.7"}
+    ];
+
+    // All functions (renderListings, filterListings, setCategory, addToCart, showCart, showItemDetail, etc.) are same as your working code but with fixed hideAllSections and showSection
+
+    function renderListings(filtered) {
+      const container = document.getElementById('listingsGrid');
+      container.innerHTML = '';
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-3xl p-5 card-hover`;
+        card.innerHTML = `
+          <div class="flex justify-center text-6xl mb-3">${item.emoji}</div>
+          ${item.tag ? `<div class="text-xs font-bold text-center mb-2 ${item.tag==='ORGANIC'?'text-green-600':'text-red-500'}">${item.tag}</div>` : ''}
+          <h3 class="font-semibold text-center text-base">${item.name}</h3>
+          <p class="text-center text-gray-500 text-xs mt-1">${item.farmer} • ${item.location} (${item.distance}km)</p>
+          <p class="text-center text-xs text-gray-600 mt-1">${item.harvest} • ${item.qty}</p>
+          <div class="flex justify-center gap-2 mt-3">
+            <span class="font-bold text-green-700 text-xl">₹${item.price}</span>
+            <span class="text-xs text-gray-400 line-through self-end">AI ₹${item.ai}</span>
+          </div>
+          <div class="mt-5 flex gap-2">
+            <button onclick="openCallModal('${item.farmer}')" class="flex-1 py-2.5 border border-green-600 text-green-700 rounded-2xl text-xs font-medium">📞 Call</button>
+            <button onclick="addToCart(${item.id}, '${item.name}', ${item.price}, '${item.farmer}')" class="flex-1 py-2.5 bg-green-700 text-white rounded-2xl text-xs font-medium">Add to Cart</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterListings() {
+      const term = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const distanceLimit = document.getElementById('distanceFilter').value ? parseInt(document.getElementById('distanceFilter').value) : null;
+      const activeBtn = document.querySelector('.active-filter');
+      const category = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
+
+      let filtered = listings.filter(item => 
+        item.name.toLowerCase().includes(term) || 
+        item.farmer.toLowerCase().includes(term) || 
+        item.location.toLowerCase().includes(term)
+      );
+
+      if (distanceLimit !== null) filtered = filtered.filter(item => item.distance <= distanceLimit);
+      if (category !== 'all') filtered = filtered.filter(item => item.type === category);
+
+      renderListings(filtered);
+    }
+
+    function setCategory(btn) {
+      document.querySelectorAll('button[data-category]').forEach(b => b.classList.remove('active-filter', 'bg-green-700', 'text-white'));
+      btn.classList.add('active-filter', 'bg-green-700', 'text-white');
+      filterListings();
+    }
+
+    function addToCart(id, name, price, farmer) {
+      cart.push({id, name, price, qty: 1, expected: "Tomorrow by 10 AM", farmer: farmer});
+      alert(`✅ ${name} added to cart!`);
+    }
+
+    function showCart() {
+      const container = document.getElementById('cartItems');
+      container.innerHTML = '';
+      let total = 0;
+
+      if (cart.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-500 py-12">Your cart is empty</p>`;
+      } else {
+        cart.forEach((item, index) => {
+          total += item.price * item.qty;
+          const div = document.createElement('div');
+          div.className = "bg-white border border-green-100 p-6 rounded-3xl flex justify-between items-center cursor-pointer card-hover";
+          div.onclick = () => showItemDetail(item, index);
+          div.innerHTML = `
+            <div>
+              <p class="font-medium">${item.name}</p>
+              <p class="text-xs text-gray-500">From ${item.farmer}</p>
+              <p class="text-green-700">₹${item.price} × ${item.qty}</p>
+            </div>
+            <button onclick="event.stopImmediatePropagation(); removeFromCart(${index});" class="text-red-500 text-sm">Remove</button>
+          `;
+          container.appendChild(div);
+        });
+      }
+      document.getElementById('cartTotal').innerHTML = `Total: ₹${total}`;
+    }
+
+    function showItemDetail(item, index) {
+      const modal = document.getElementById('itemDetailModal');
+      document.getElementById('detailName').textContent = item.name;
+      document.getElementById('detailContent').innerHTML = `
+        <div class="text-center text-8xl mb-6">🥕</div>
+        <p class="text-center text-green-700 font-medium text-lg">Expected Delivery: ${item.expected}</p>
+        <div class="mt-8 flex items-center gap-4">
+          <label class="font-medium">Quantity:</label>
+          <input id="qtyInput" type="number" value="${item.qty}" min="1" class="w-20 p-3 border border-gray-300 rounded-2xl text-center" onchange="updateCartQty(${index}, this.value)">
+        </div>
+        <div class="mt-6 p-5 bg-green-50 rounded-2xl text-sm">
+          From: ${item.farmer}<br>
+          Fresh from local farmer in Coimbatore • Direct farm-to-door delivery • Support local agriculture 🌱
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function updateCartQty(index, newQty) {
+      cart[index].qty = parseInt(newQty) || 1;
+      showCart();
+    }
+
+    function closeItemDetail() {
+      document.getElementById('itemDetailModal').classList.add('hidden');
+      showCart();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      showCart();
+    }
+
+    function proceedToCheckout() {
+      if (cart.length === 0) return alert("Cart is empty");
+      document.getElementById('checkoutModal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+    }
+
+    function placeOrder(method) {
+      closeCheckoutModal();
+      hideAllSections();
+      document.getElementById('orderSuccess').classList.remove('hidden');
+      
+      window.currentOrder = {
+        date: new Date().toLocaleDateString('en-IN'),
+        time: new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}),
+        items: cart.map(item => ({name: item.name, qty: item.qty, price: item.price, farmer: item.farmer})),
+        subtotal: cart.reduce((sum, i) => sum + i.price * i.qty, 0),
+        gst: Math.round(cart.reduce((sum, i) => sum + i.price * i.qty, 0) * 0.05),
+        delivery: 50,
+        total: cart.reduce((sum, i) => sum + i.price * i.qty, 0) + 50 + Math.round(cart.reduce((sum, i) => sum + i.price * i.qty, 0) * 0.05),
+        method: method
+      };
+    }
+
+    function downloadInvoice() {
+      if (!window.currentOrder) return;
+      const order = window.currentOrder;
+      let invoiceText = `VAYALDIRECT INVOICE\nOrder #VD-${Date.now().toString().slice(-6)}\nDate: ${order.date}   Time: ${order.time}\nPayment Method: ${order.method}\n\nItems:\n`;
+      order.items.forEach(item => {
+        invoiceText += `${item.name} from ${item.farmer} x ${item.qty} = ₹${item.price * item.qty}\n`;
+      });
+      invoiceText += `\nSubtotal: ₹${order.subtotal}\nGST (5%): ₹${order.gst}\nDelivery Charge: ₹${order.delivery}\nGrand Total: ₹${order.total}\n\nThank you for supporting local farmers! 🌱\nVayalDirect`;
+
+      const blob = new Blob([invoiceText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VayalDirect_Invoice_${Date.now().toString().slice(-6)}.txt`;
+      a.click();
+    }
+
+    function hideOrderSuccess() {
+      document.getElementById('orderSuccess').classList.add('hidden');
+      cart = [];
+    }
+
+    function openCallModal(farmer) {
+      document.getElementById('modalFarmerName').textContent = farmer;
+      document.getElementById('callModal').classList.remove('hidden');
+    }
+
+    function closeCallModal() {
+      document.getElementById('callModal').classList.add('hidden');
+    }
+
+    function makeVoiceCall() { alert("📞 Voice call started with real-time translation"); closeCallModal(); }
+    function makeVideoCall() { alert("📹 Video call started with real-time translation"); closeCallModal(); }
+
+    function toggleSideMenu() {
+      document.getElementById('sideMenu').classList.toggle('open');
+    }
+
+    function showSection(section) {
+      toggleSideMenu();
+      hideAllSections();
+      if (section === 'cart') { showCart(); document.getElementById('cartSection').classList.remove('hidden'); }
+      else if (section === 'payment') document.getElementById('paymentSection').classList.remove('hidden');
+      else if (section === 'history') document.getElementById('historySection').classList.remove('hidden');
+      else if (section === 'favourites') { renderFavourites(); document.getElementById('favouritesSection').classList.remove('hidden'); }
+      else if (section === 'tracking') document.getElementById('trackingSection').classList.remove('hidden');
+    }
+
+    function hideAllSections() {
+      document.querySelectorAll('#cartSection, #paymentSection, #historySection, #favouritesSection, #trackingSection, #itemDetailModal, #checkoutModal, #orderSuccess').forEach(s => s.classList.add('hidden'));
+    }
+
+    function renderFavourites() {
+      const container = document.getElementById('favList');
+      container.innerHTML = '';
+      favourites.forEach(f => {
+        const div = document.createElement('div');
+        div.className = "bg-white border border-green-100 p-6 rounded-3xl text-center card-hover";
+        div.innerHTML = `<p class="font-medium">${f.name}</p><p class="text-xs text-gray-500">${f.location}</p><p class="text-green-600">★ ${f.rating}</p>`;
+        container.appendChild(div);
+      });
+    }
+
+    function filterFavourites() {
+      const term = document.getElementById('favSearch').value.toLowerCase();
+      const filtered = favourites.filter(f => f.name.toLowerCase().includes(term) || f.location.toLowerCase().includes(term));
+      const container = document.getElementById('favList');
+      container.innerHTML = '';
+      filtered.forEach(f => {
+        const div = document.createElement('div');
+        div.className = "bg-white border border-green-100 p-6 rounded-3xl text-center card-hover";
+        div.innerHTML = `<p class="font-medium">${f.name}</p><p class="text-xs text-gray-500">${f.location}</p><p class="text-green-600">★ ${f.rating}</p>`;
+        container.appendChild(div);
+      });
+    }
+
+    function addNewFriend() {
+      const name = prompt("Enter Farmer Name or ID to add as friend:");
+      if (name) {
+        favourites.push({name: name, location: "Coimbatore", rating: "4.5"});
+        renderFavourites();
+        alert("Farmer friend added successfully!");
+      }
+    }
+
+    // Google Translate
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'ta,hi,te,bn,ml'}, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', e => {
+        if (e.target.value === 'google') wrapper.classList.remove('hidden');
+        else wrapper.classList.add('hidden');
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en'
+        ? 'google'
+        : 'en';
+      selector.value = mode;
+      if (mode === 'google') wrapper.classList.remove('hidden');
+      else wrapper.classList.add('hidden');
+    }
+
+    window.onload = () => {
+      loadBuyerData();
+      renderListings(listings);
+      restoreTranslationFromStorage();
+      initializeLanguageSelector();
+      const script = document.createElement('script');
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      document.head.appendChild(script);
+    };
+
+    function loadBuyerData() {
+      const phone = localStorage.getItem('currentBuyerPhone') || localStorage.getItem('buyerPhone');
+      const registeredBuyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+
+      let buyerData = {
+        name: 'New Buyer',
+        email: 'buyer@example.com',
+        totalSpent: 0,
+        ordersCount: 0,
+        joined: new Date().toISOString(),
+        bankDetails: {},
+        onboardingComplete: false
+      };
+
+      if (phone && registeredBuyers[phone]) {
+        buyerData = { ...buyerData, ...registeredBuyers[phone] };
+      }
+
+      window.currentBuyerData = buyerData;
+
+      // Update UI
+      // Update ID
+      const idElement = document.querySelector('.font-mono.font-bold.text-green-700');
+      if (idElement) {
+        idElement.textContent = 'BUYER-' + phone.replace(/\D/g, '').slice(-4).toUpperCase();
+      }
+
+      // Update email
+      const emailElement = document.querySelector('p.font-medium');
+      if (emailElement && emailElement.previousElementSibling && emailElement.previousElementSibling.textContent.includes('Email')) {
+        emailElement.textContent = buyerData.email;
+      }
+
+      // For new users, clear transaction history
+      if (!phone || !registeredBuyers[phone] || buyerData.ordersCount === 0) {
+        const transactionsContainer = document.querySelector('.space-y-4.text-sm');
+        if (transactionsContainer) {
+          transactionsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No transactions yet</p>';
+        }
+      }
+    }
+  </script>
+
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>

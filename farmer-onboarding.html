@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Onboarding - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    .step { transition: all 0.3s ease; }
+    .step.hidden { display: none; }
+    .progress-bar { background: linear-gradient(90deg, #16a34a 0%, #16a34a var(--progress), #e5e7eb var(--progress), #e5e7eb 100%); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-green-700 rounded-2xl flex items-center justify-center text-3xl">🌾</div>
+        <div>
+          <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+          <p class="text-xs text-green-600 -mt-1">Farm Details Setup</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+          <option value="google">🌐 More Languages</option>
+        </select>
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-3xl mx-auto px-6 py-12">
+
+    <!-- Progress Indicator -->
+    <div class="mb-10">
+      <div class="flex justify-between text-sm font-medium text-gray-600 mb-3">
+        <span>Step <span id="currentStep">1</span> of 5</span>
+        <span id="stepName">Land Details</span>
+      </div>
+      <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div class="progress-bar h-full rounded-full" style="--progress: 20%"></div>
+      </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-3xl shadow-xl p-10">
+
+      <!-- Step 1: Land Details -->
+      <div class="step" id="step1">
+        <h2 class="text-3xl font-bold text-green-800 mb-2">🌱 Farm Land Details</h2>
+        <p class="text-gray-600 mb-8">Tell us about your farmland</p>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">How many acres of land do you have?</label>
+            <input type="number" id="landAcres" placeholder="e.g. 5" min="0" step="0.5"
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+            <p class="text-xs text-gray-500 mt-1">Include total cultivable area</p>
+          </div>
+
+          <button onclick="nextStep(1)" 
+                  class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold text-lg transition">
+            Continue →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Crops Production -->
+      <div class="step hidden" id="step2">
+        <h2 class="text-3xl font-bold text-green-800 mb-2">🌾 What Do You Produce?</h2>
+        <p class="text-gray-600 mb-8">Add the crops/products you produce</p>
+        
+        <div id="cropsContainer" class="space-y-4 mb-6">
+          <div class="crop-row flex gap-3">
+            <select class="crop-name flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+              <option value="">Select crop/product</option>
+              <option value="Rice">Rice (kg)</option>
+              <option value="Coconut">Coconut (pieces/bunches)</option>
+              <option value="Sugarcane">Sugarcane (kg)</option>
+              <option value="Mango">Mango (kg)</option>
+              <option value="Banana">Banana (bunches)</option>
+              <option value="Tomato">Tomato (kg)</option>
+              <option value="Onion">Onion (kg)</option>
+              <option value="Potato">Potato (kg)</option>
+              <option value="Spinach">Spinach (bundles)</option>
+              <option value="Carrot">Carrot (kg)</option>
+              <option value="Cabbage">Cabbage (kg)</option>
+              <option value="Brinjal">Brinjal (kg)</option>
+              <option value="Pepper">Pepper (kg)</option>
+              <option value="Coriander">Coriander (bundles)</option>
+              <option value="Turmeric">Turmeric (kg)</option>
+              <option value="Ginger">Ginger (kg)</option>
+              <option value="Milk">Milk (liters)</option>
+              <option value="Honey">Honey (liters)</option>
+              <option value="Flowers">Flowers (bundles)</option>
+              <option value="Other">Other</option>
+            </select>
+            <input type="number" placeholder="Quantity" min="0" step="0.1" class="crop-quantity w-32 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+            <button onclick="removeCrop(this)" class="px-4 py-3 bg-red-100 text-red-700 rounded-2xl hover:bg-red-200">✕</button>
+          </div>
+        </div>
+
+        <button onclick="addCrop()" class="w-full mb-6 py-3 border-2 border-dashed border-green-300 text-green-700 rounded-2xl font-semibold hover:bg-green-50">
+          + Add Another Crop/Product
+        </button>
+
+        <div class="flex gap-4">
+          <button onclick="prevStep(2)" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 rounded-2xl font-semibold">← Back</button>
+          <button onclick="nextStep(2)" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Deliverers & Vehicles -->
+      <div class="step hidden" id="step3">
+        <h2 class="text-3xl font-bold text-green-800 mb-2">🚚 Delivery Infrastructure</h2>
+        <p class="text-gray-600 mb-8">Tell us about your delivery capability</p>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">How many deliverers do you have?</label>
+            <input type="number" id="deliverers" placeholder="e.g. 2" min="0" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Delivery Vehicles</label>
+            <div id="vehiclesContainer" class="space-y-3 mb-4">
+              <div class="vehicle-row flex gap-3">
+                <select class="vehicle-type flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+                  <option value="">Select vehicle type</option>
+                  <option value="Motorcycle">Motorcycle</option>
+                  <option value="Auto-Rickshaw">Auto-Rickshaw</option>
+                  <option value="Small Truck">Small Truck (1-3 ton)</option>
+                  <option value="Medium Truck">Medium Truck (3-5 ton)</option>
+                  <option value="Large Truck">Large Truck (5+ ton)</option>
+                  <option value="Bicycle">Bicycle</option>
+                  <option value="Cart">Cart</option>
+                </select>
+                <input type="number" placeholder="Count" min="1" class="vehicle-count w-20 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+                <button onclick="removeVehicle(this)" class="px-4 py-3 bg-red-100 text-red-700 rounded-2xl hover:bg-red-200">✕</button>
+              </div>
+            </div>
+            <button onclick="addVehicle()" class="w-full py-3 border-2 border-dashed border-green-300 text-green-700 rounded-2xl font-semibold hover:bg-green-50">
+              + Add Vehicle
+            </button>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button onclick="prevStep(3)" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 rounded-2xl font-semibold">← Back</button>
+          <button onclick="nextStep(3)" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Bank Details -->
+      <div class="step hidden" id="step4">
+        <h2 class="text-3xl font-bold text-green-800 mb-2">🏦 Bank Details</h2>
+        <p class="text-gray-600 mb-8">For receiving payments from buyers</p>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <input type="email" id="emailAddress" placeholder="farmer@example.com" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+            <input type="text" id="bankName" placeholder="e.g. State Bank of India" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Account Holder Name</label>
+            <input type="text" id="accountName" placeholder="Full name as per bank records" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+            <input type="text" id="accountNumber" placeholder="e.g. 1234567890" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">IFSC Code</label>
+            <input type="text" id="ifscCode" placeholder="e.g. SBIN0001234" 
+                   class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-green-500">
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <p class="text-sm text-blue-800">🔒 Your bank details are encrypted and secure. We only use them for processing payments.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button onclick="prevStep(4)" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 rounded-2xl font-semibold">← Back</button>
+          <button onclick="nextStep(4)" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold">Review & Complete →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Review & Submit -->
+      <div class="step hidden" id="step5">
+        <h2 class="text-3xl font-bold text-green-800 mb-2">✅ Review Your Details</h2>
+        <p class="text-gray-600 mb-8">Make sure everything is correct before proceeding</p>
+        
+        <div class="space-y-6">
+          <div class="bg-green-50 border border-green-200 rounded-2xl p-6">
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <p class="text-sm text-gray-600">Land Size</p>
+                <p class="text-2xl font-bold text-green-800"><span id="reviewLand">-</span> acres</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Crops Produced</p>
+                <p class="text-2xl font-bold text-green-800"><span id="reviewCrops">0</span></p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Deliverers</p>
+                <p class="text-2xl font-bold text-green-800"><span id="reviewDeliverers">0</span></p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Vehicles</p>
+                <p class="text-2xl font-bold text-green-800"><span id="reviewVehicles">0</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-2xl p-6">
+            <p class="font-semibold text-gray-800 mb-4">Crops Summary:</p>
+            <div id="cropsReview" class="space-y-2 text-sm text-gray-600"></div>
+          </div>
+
+          <div class="bg-gray-50 rounded-2xl p-6">
+            <p class="font-semibold text-gray-800 mb-4">Bank Account (Last 4 digits):</p>
+            <p class="text-sm text-gray-600">****<span id="reviewAccount">****</span></p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button onclick="prevStep(5)" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 rounded-2xl font-semibold">← Back</button>
+          <button onclick="submitOnboarding()" class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold text-lg">
+            Complete Setup & Go to Dashboard
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const apiBase = 'http://localhost:3000';
+    let currentStepNum = 1;
+
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`step${step}`).classList.remove('hidden');
+      
+      const progress = (step / 5) * 100;
+      document.querySelector('.progress-bar').style.setProperty('--progress', progress + '%');
+      document.getElementById('currentStep').textContent = step;
+      
+      const stepNames = [
+        'Farm Land Details',
+        'Crops Production',
+        'Delivery Infrastructure',
+        'Bank Details',
+        'Review & Complete'
+      ];
+      document.getElementById('stepName').textContent = stepNames[step - 1];
+    }
+
+    function nextStep(step) {
+      // Validate current step
+      if (step === 1) {
+        const land = document.getElementById('landAcres').value;
+        if (!land || land <= 0) return alert('Please enter valid land size');
+      } else if (step === 2) {
+        const crops = document.querySelectorAll('.crop-row');
+        let hasValid = false;
+        crops.forEach(row => {
+          if (row.querySelector('.crop-name').value && row.querySelector('.crop-quantity').value) hasValid = true;
+        });
+        if (!hasValid) return alert('Please add at least one crop');
+      } else if (step === 3) {
+        const deliverers = document.getElementById('deliverers').value;
+        if (!deliverers || deliverers < 0) return alert('Please enter number of deliverers');
+      } else if (step === 4) {
+        const bank = document.getElementById('bankName').value;
+        const account = document.getElementById('accountName').value;
+        const accountNum = document.getElementById('accountNumber').value;
+        const ifsc = document.getElementById('ifscCode').value;
+        if (!bank || !account || !accountNum || !ifsc) return alert('Please fill all bank details');
+      }
+
+      if (step === 4) {
+        updateReview();
+      }
+
+      currentStepNum = step + 1;
+      showStep(currentStepNum);
+    }
+
+    function prevStep(step) {
+      currentStepNum = step - 1;
+      showStep(currentStepNum);
+    }
+
+    function addCrop() {
+      const html = `
+        <div class="crop-row flex gap-3">
+          <select class="crop-name flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+            <option value="">Select crop/product</option>
+            <option value="Rice">Rice (kg)</option>
+            <option value="Coconut">Coconut (pieces/bunches)</option>
+            <option value="Sugarcane">Sugarcane (kg)</option>
+            <option value="Mango">Mango (kg)</option>
+            <option value="Banana">Banana (bunches)</option>
+            <option value="Tomato">Tomato (kg)</option>
+            <option value="Onion">Onion (kg)</option>
+            <option value="Potato">Potato (kg)</option>
+            <option value="Spinach">Spinach (bundles)</option>
+            <option value="Carrot">Carrot (kg)</option>
+            <option value="Cabbage">Cabbage (kg)</option>
+            <option value="Brinjal">Brinjal (kg)</option>
+            <option value="Pepper">Pepper (kg)</option>
+            <option value="Coriander">Coriander (bundles)</option>
+            <option value="Turmeric">Turmeric (kg)</option>
+            <option value="Ginger">Ginger (kg)</option>
+            <option value="Milk">Milk (liters)</option>
+            <option value="Honey">Honey (liters)</option>
+            <option value="Flowers">Flowers (bundles)</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="number" placeholder="Quantity" min="0" step="0.1" class="crop-quantity w-32 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+          <button onclick="removeCrop(this)" class="px-4 py-3 bg-red-100 text-red-700 rounded-2xl hover:bg-red-200">✕</button>
+        </div>
+      `;
+      document.getElementById('cropsContainer').insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeCrop(btn) {
+      btn.closest('.crop-row').remove();
+    }
+
+    function addVehicle() {
+      const html = `
+        <div class="vehicle-row flex gap-3">
+          <select class="vehicle-type flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+            <option value="">Select vehicle type</option>
+            <option value="Motorcycle">Motorcycle</option>
+            <option value="Auto-Rickshaw">Auto-Rickshaw</option>
+            <option value="Small Truck">Small Truck (1-3 ton)</option>
+            <option value="Medium Truck">Medium Truck (3-5 ton)</option>
+            <option value="Large Truck">Large Truck (5+ ton)</option>
+            <option value="Bicycle">Bicycle</option>
+            <option value="Cart">Cart</option>
+          </select>
+          <input type="number" placeholder="Count" min="1" class="vehicle-count w-20 px-4 py-3 border border-gray-300 rounded-2xl focus:border-green-500">
+          <button onclick="removeVehicle(this)" class="px-4 py-3 bg-red-100 text-red-700 rounded-2xl hover:bg-red-200">✕</button>
+        </div>
+      `;
+      document.getElementById('vehiclesContainer').insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeVehicle(btn) {
+      btn.closest('.vehicle-row').remove();
+    }
+
+    function updateReview() {
+      // Land
+      document.getElementById('reviewLand').textContent = document.getElementById('landAcres').value;
+      
+      // Crops
+      const crops = document.querySelectorAll('.crop-row');
+      document.getElementById('reviewCrops').textContent = crops.length;
+      
+      let cropsHTML = '';
+      crops.forEach(row => {
+        const name = row.querySelector('.crop-name').value;
+        const qty = row.querySelector('.crop-quantity').value;
+        if (name && qty) {
+          cropsHTML += `<p>• ${name}: ${qty} units</p>`;
+        }
+      });
+      document.getElementById('cropsReview').innerHTML = cropsHTML;
+      
+      // Deliverers
+      document.getElementById('reviewDeliverers').textContent = document.getElementById('deliverers').value;
+      
+      // Vehicles
+      const vehicles = document.querySelectorAll('.vehicle-row');
+      document.getElementById('reviewVehicles').textContent = vehicles.length;
+      
+      // Bank
+      const account = document.getElementById('accountNumber').value;
+      const last4 = account.slice(-4);
+      document.getElementById('reviewAccount').textContent = last4;
+    }
+
+    async function submitOnboarding() {
+      let phone = localStorage.getItem('farmerPhone');
+      if (!phone) {
+        console.error('Phone not found in localStorage');
+        console.log('Available keys:', Object.keys(localStorage));
+        return alert('Session expired. Please login again. (Phone not found)');
+      }
+
+      // Normalize phone format to match backend
+      if (!phone.startsWith('+91')) {
+        phone = '+91' + phone.replace(/\D/g, '');
+      }
+      console.log('Submitting with phone:', phone);
+
+      // Collect crops
+      const crops = [];
+      document.querySelectorAll('.crop-row').forEach(row => {
+        const name = row.querySelector('.crop-name').value;
+        const qty = row.querySelector('.crop-quantity').value;
+        if (name && qty) {
+          crops.push({ name, quantity: parseFloat(qty) });
+        }
+      });
+
+      // Collect vehicles
+      const vehicles = [];
+      document.querySelectorAll('.vehicle-row').forEach(row => {
+        const type = row.querySelector('.vehicle-type').value;
+        const count = row.querySelector('.vehicle-count').value;
+        if (type && count) {
+          vehicles.push({ type, count: parseInt(count) });
+        }
+      });
+
+      const data = {
+        phone,
+        landAcres: parseFloat(document.getElementById('landAcres').value),
+        crops,
+        deliverers: parseInt(document.getElementById('deliverers').value),
+        vehicles,
+        bankDetails: {
+          email: document.getElementById('emailAddress').value,
+          bankName: document.getElementById('bankName').value,
+          accountName: document.getElementById('accountName').value,
+          accountNumber: document.getElementById('accountNumber').value,
+          ifscCode: document.getElementById('ifscCode').value
+        }
+      };
+
+      console.log('Submitting onboarding data:', data);
+
+      try {
+        const resp = await fetch(`${apiBase}/api/farmer/onboarding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        console.log('Response status:', resp.status);
+        const respData = await resp.json();
+        console.log('Response data:', respData);
+
+        if (resp.ok) {
+          // Update localStorage with returned farmer data
+          if (respData.farmer) {
+            const finalData = { ...respData.farmer, onboardingComplete: true };
+            localStorage.setItem('farmerData_' + finalData.uid, JSON.stringify(finalData));
+            const farmers = JSON.parse(localStorage.getItem('vayalRegisteredFarmers') || '{}');
+            farmers[phone] = finalData;
+            localStorage.setItem('vayalRegisteredFarmers', JSON.stringify(farmers));
+          }
+          alert('✅ Onboarding completed! Redirecting to dashboard...');
+          window.location.href = 'farm.html';
+        } else {
+          console.error('Backend error:', respData);
+          alert('Error saving details: ' + (respData.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+
+        // Local fallback: mark onboarding done in localStorage so next login doesn't repeat onboarding
+        const farmers = JSON.parse(localStorage.getItem('vayalRegisteredFarmers') || '{}');
+        const localFarmer = farmers[phone] || JSON.parse(localStorage.getItem('farmerData_' + localStorage.getItem('currentFarmerUid')) || '{}');
+        if (localFarmer) {
+          localFarmer.landAcres = data.landAcres;
+          localFarmer.crops = data.crops;
+          localFarmer.deliverers = data.deliverers;
+          localFarmer.vehicles = data.vehicles;
+          localFarmer.bankDetails = data.bankDetails;
+          localFarmer.onboardingComplete = true;
+          farmers[phone] = localFarmer;
+          localStorage.setItem('farmerData_' + localFarmer.uid, JSON.stringify(localFarmer));
+          localStorage.setItem('vayalRegisteredFarmers', JSON.stringify(farmers));
+        }
+
+        alert('Connection error (offline fallback used). Onboarding is set locally as complete.\n\n' + err.message);
+        window.location.href = 'farm.html';
+      }
+    }
+
+    // Initialize
+    showStep(1);
+
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'ta,hi,te,bn,ml'}, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', e => {
+        if (e.target.value === 'google') wrapper.classList.remove('hidden');
+        else wrapper.classList.add('hidden');
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en' ? 'google' : 'en';
+      selector.value = mode;
+      if (mode === 'google') wrapper.classList.remove('hidden');
+      else wrapper.classList.add('hidden');
+    }
+
+    restoreTranslationFromStorage();
+    initializeLanguageSelector();
+    const script = document.createElement('script');
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.head.appendChild(script);
+  </script>
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>

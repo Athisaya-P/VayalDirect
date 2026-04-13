@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VayalDirect - Direct from Farm to Market</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    .tamil { font-family: 'Noto Sans Tamil', sans-serif; }
+    .hero-bg { background: linear-gradient(135deg, #166534 0%, #4ade80 100%); }
+    .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-12px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+    .tab-active { border-bottom: 3px solid #166534; color: #166534; font-weight: 600; }
+    /* ── HOW IT WORKS ── */
+    .section { padding: 7rem 5%; }
+     .section-label {
+      font-family: 'Caveat', cursive;
+      font-size: 1.1rem;
+      color:brown;
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color:#1c1917;
+      letter-spacing: -1px;
+      max-width: 580px;
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.5rem;
+      margin-top: 4rem;
+      position: relative;
+    }
+    .how-grid::before {
+      content: '';
+      position: absolute;
+      top: 3rem; left: 12%; right: 12%;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, #166534 0, #166534 12px, transparent 12px, transparent 24px);
+      z-index: 0;
+    }
+    .how-step {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+    .step-icon-wrap {
+      width: 82px; height: 82px;
+      margin: 0 auto 1.2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border: 3px solid #1c1917;
+      box-shadow: 4px 4px 0 #1c1917;
+      background: #fef9f0;
+      transition: transform 0.3s;
+    }
+    .how-step:hover .step-icon-wrap { transform: rotate(-8deg) scale(1.1); }
+    .how-step:nth-child(1) .step-icon-wrap { background: #fef3c7; }
+    .how-step:nth-child(2) .step-icon-wrap { background: #c8e6c9; }
+    .how-step:nth-child(3) .step-icon-wrap { background: #ffe0b2; }
+    .how-step:nth-child(4) .step-icon-wrap { background: #f8bbd0; }
+    .step-num { font-size: 0.7rem; font-weight: 700; color: #78716c; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .step-title { font-weight: 700; font-size: 1rem; color: #1c1917; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.82rem; color: #78716c; line-height: 1.6; }
+
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+
+<!-- Navbar -->
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 bg-green-700 rounded-2xl flex items-center justify-center text-3xl shadow-inner">🌾</div>
+      <div>
+        <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+        <p class="text-xs text-green-600 -mt-1">Direct from Farm to Market</p>
+      </div>
+    </div>
+
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="#how" class="hover:text-green-700 transition">How it Works</a>
+      <a href="#features" class="hover:text-green-700 transition">Features</a>
+      <a href="#farmers" class="hover:text-green-700 transition">Farmers</a>
+      <a href="#buyers" class="hover:text-green-700 transition">Buyers</a>
+    </div>
+
+    <div class="flex items-center gap-6">
+      <!-- Translation - Same as Farmer/Buyer Dashboard -->
+      <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+        <option value="en">English</option>
+        <option value="google">🌐 More Languages</option>
+      </select>
+
+      <div id="gt-wrapper" class="relative hidden">
+        <button onclick="toggleGTPanel()" 
+          class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+          🌐 Translate
+        </button>
+        <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+          <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+          <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+          <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+          <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+          <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+          <div class="border-t my-1"></div>
+          <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+        </div>
+      </div>
+      <button onclick="showRoleSelectionModal()" 
+              class="bg-green-700 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-800 transition">
+        Login / Register
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Live Stats Bar -->
+<div class="bg-green-50 border-b border-green-100 py-3">
+  <div class="max-w-7xl mx-auto px-6 flex flex-wrap justify-center md:justify-between items-center gap-6 text-sm">
+    <div class="flex items-center gap-8">
+      <div>
+        <span class="font-semibold text-green-700">👥</span>
+        <span id="totalUsers" class="font-bold text-green-800">1,248</span>
+        <span class="text-green-600">farmers joined</span>
+      </div>
+      <div>
+        <span class="font-semibold text-green-700">🔴</span>
+        <span id="liveUsers" class="font-bold text-green-800">47</span>
+        <span class="text-green-600">online now</span>
+      </div>
+    </div>
+    <div class="text-green-600 text-xs md:text-sm"> ✅ Real-time demo • Data saved locally </div>
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero-bg text-white py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+    <div class="space-y-8">
+      <div class="inline-flex items-center gap-2 bg-white/20 px-5 py-2 rounded-full text-sm backdrop-blur-sm">🌱 Coimbatore • Tamil Nadu</div>
+      <h1 class="text-5xl md:text-7xl font-bold leading-tight">From Field to Fork in Hours</h1>
+      <p class="text-2xl text-green-100 max-w-lg">Direct. Fair. Fresh. No Middlemen.</p>
+      
+      <div class="flex flex-wrap gap-4">
+        <button onclick="startSellingFlow()" 
+                class="bg-white text-green-800 px-10 py-4 rounded-3xl font-semibold text-lg hover:scale-105 transition">
+          Start Selling Now
+        </button>
+        <button onclick="alert('45-second demo video playing...')" 
+                class="border-2 border-white px-8 py-4 rounded-3xl font-medium text-lg hover:bg-white/10 transition">
+          Watch Demo
+        </button>
+      </div>
+    </div>
+    <div class="relative">
+      <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449" alt="Farmer with fresh vegetables" class="rounded-3xl shadow-2xl w-full">
+    </div>
+  </div>
+</section>
+
+<!-- Rest of your sections (Fresh Picks, Problem, How it Works, Features, etc.) remain same -->
+<!-- ... (I kept them short here for readability - paste your original sections here) ... -->
+<!-- 🌟 Today's Fresh Picks - With Great Animations -->
+<section class="py-20 bg-gradient-to-b from-white to-green-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <span class="inline-flex items-center gap-2 bg-green-100 text-green-700 px-5 py-2 rounded-full text-sm font-medium tracking-wider">
+        🌟 <span class="lang-text" data-key="freshPicks">Today's Fresh Picks</span>
+      </span>
+      <h2 class="text-5xl font-bold text-green-900 mt-4 lang-text" data-key="itemOfDayTitle">Harvest of the Day</h2>
+      <p class="text-green-600 mt-3 max-w-md mx-auto">Freshly harvested • Best price • Limited stock</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      
+      <!-- Card 1 -->
+      <div class="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-green-100">
+        <div class="relative h-56 bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center text-8xl overflow-hidden">
+          🥥
+          <div class="absolute top-4 right-4 bg-white/90 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow">
+            Trending
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-semibold text-xl text-green-900 lang-text" data-key="coconutTitle">Tender Coconut</h3>
+          <p class="text-green-600 text-sm mt-1">Coimbatore • Just Harvested</p>
+          
+          <div class="mt-6 flex items-end justify-between">
+            <div>
+              <span class="text-3xl font-bold text-green-700">₹28</span>
+              <span class="text-sm text-gray-400 line-through ml-2">₹45</span>
+            </div>
+            <button onclick="addToCart('Tender Coconut')" 
+              class="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-2xl text-sm font-medium transition-all active:scale-95">
+              Add +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-green-100">
+        <div class="relative h-56 bg-gradient-to-br from-yellow-100 to-amber-100 flex items-center justify-center text-8xl overflow-hidden">
+          🥭
+          <div class="absolute top-4 right-4 bg-white/90 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow">
+            Favoured
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-semibold text-xl text-green-900 lang-text" data-key="mangoTitle">Alphonso Mango</h3>
+          <p class="text-green-600 text-sm mt-1">Salem • King of Mangoes</p>
+          
+          <div class="mt-6 flex items-end justify-between">
+            <div>
+              <span class="text-3xl font-bold text-green-700">₹89/kg</span>
+            </div>
+            <button onclick="addToCart('Alphonso Mango')" 
+              class="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-2xl text-sm font-medium transition-all active:scale-95">
+              Add +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-green-100">
+        <div class="relative h-56 bg-gradient-to-br from-red-100 to-rose-100 flex items-center justify-center text-8xl overflow-hidden">
+          🍅
+         <div class="absolute top-4 right-4 bg-white/90 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow">
+            Organic
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-semibold text-xl text-green-900 lang-text" data-key="tomatoTitle">Organic Tomato</h3>
+          <p class="text-green-600 text-sm mt-1">Low Pesticide • Farm Fresh</p>
+          
+          <div class="mt-6 flex items-end justify-between">
+            <div>
+              <span class="text-3xl font-bold text-green-700">₹35/kg</span>
+            </div>
+            <button onclick="addToCart('Organic Tomato')" 
+              class="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-2xl text-sm font-medium transition-all active:scale-95">
+              Add +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-green-100">
+        <div class="relative h-56 bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center text-8xl overflow-hidden">
+          🍆
+          <div class="absolute top-4 right-4 bg-white/90 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow">
+            Popular
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-semibold text-xl text-green-900 lang-text" data-key="brinjalTitle">Fresh Brinjal</h3>
+          <p class="text-green-600 text-sm mt-1">Coimbatore Market</p>
+          
+          <div class="mt-6 flex items-end justify-between">
+            <div>
+              <span class="text-3xl font-bold text-green-700">₹42/kg</span>
+            </div>
+            <button onclick="addToCart('Fresh Brinjal')" 
+              class="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-2xl text-sm font-medium transition-all active:scale-95">
+              Add +
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- PROBLEM -->
+<section class="py-14 bg-amber-50 border-y border-amber-200">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <h2 class="text-3xl md:text-4xl font-extrabold text-amber-800 mb-4">Farmers lose up to <span class="text-red-600">70% profit</span> to middlemen</h2>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto">30% of fruits and vegetables rot before reaching buyers. VayalDirect fixes both — farmers earn more, buyers get fresher produce.</p>
+    <div class="grid grid-cols-3 gap-6 mt-10 max-w-lg mx-auto">
+      <div class="bg-white rounded-2xl p-4 shadow"><p class="text-3xl font-extrabold text-red-500">70%</p><p class="text-xs text-gray-500 mt-1">Profit lost to agents</p></div>
+      <div class="bg-white rounded-2xl p-4 shadow"><p class="text-3xl font-extrabold text-orange-500">30%</p><p class="text-xs text-gray-500 mt-1">Produce wasted</p></div>
+      <div class="bg-white rounded-2xl p-4 shadow"><p class="text-3xl font-extrabold text-green-600">3×</p><p class="text-xs text-gray-500 mt-1">More income with us</p></div>
+    </div>
+  </div>
+</section>
+
+ <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="section-label">Simple process</div>
+    <h2 class="section-title">How VayalDirect Works</h2>
+     
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="step-icon-wrap">🧑‍🌾</div>
+        <div class="step-num">STEP 01</div>
+        <div class="step-title">Farmer Registers</div>
+        <div class="step-desc">Verified farmers list their produce with real-time pricing. No commission, no middleman fees.</div>
+      </div>
+       <div class="how-step">
+        <div class="step-icon-wrap">🛒</div>
+        <div class="step-num">STEP 02</div>
+        <div class="step-title">List Produce</div>
+        <div class="step-desc">One photo + quantity. Speak in your language using voice input.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-icon-wrap">💵</div>
+        <div class="step-num">STEP 03</div>
+        <div class="step-title">Get AI Price</div>
+        <div class="step-desc">Smart suggestion based on today's local market rates</div>
+      </div>
+      <div class="how-step">
+        <div class="step-icon-wrap">🤝</div>
+        <div class="step-num">STEP 04</div>
+        <div class="step-title">Direct Deal</div>
+        <div class="step-desc">Negotiate directly, place bulk or retail orders. Secure payments handled instantly.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-icon-wrap">🚚</div>
+        <div class="step-num">STEP 05</div>
+        <div class="step-title">Fast Delivery&Get Paid</div>
+        <div class="step-desc">Our cold-chain logistics ensure produce reaches buyers fresh, from farm to doorstep.</div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- Features -->
+  <section id="features" class="py-20 bg-green-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-center mb-16 text-green-800 lang-text" data-key="featuresTitle">Simple yet Powerful Features</h2>
+      <div class="grid md:grid-cols-3 gap-10">
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">📸</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat1Title">One Photo Listing</h3>
+          <p class="text-gray-600 lang-text" data-key="feat1Desc">Upload photo + speak in your language. Takes less than 20 seconds.</p>
+        </div>
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">🤖</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat2Title">AI Fair Price</h3>
+          <p class="text-gray-600 lang-text" data-key="feat2Desc">Never sell at loss. Get suggested price from local markets.</p>
+        </div>
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">🗺️</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat3Title">Hyper-Local</h3>
+          <p class="text-gray-600 lang-text" data-key="feat3Desc">Only buyers near you in your state and nearby areas.</p>
+        </div>
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">💰</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat4Title">Safe UPI Payment</h3>
+          <p class="text-gray-600 lang-text" data-key="feat4Desc">Money reaches you only after delivery confirmation.</p>
+        </div>
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">⚡</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat5Title">Surplus SOS</h3>
+          <p class="text-gray-600 lang-text" data-key="feat5Desc">Sell fast at good price before produce spoils.</p>
+        </div>
+        <div class="card-hover bg-white p-10 rounded-3xl">
+          <div class="text-6xl mb-6">📊</div>
+          <h3 class="text-2xl font-semibold mb-3 lang-text" data-key="feat6Title">Earnings Tracker</h3>
+          <p class="text-gray-600 lang-text" data-key="feat6Desc">See how much extra income you made every month.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- Farmers & Buyers Section -->
+<section id="farmers" class="py-20">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12">
+    <div class="bg-green-800 text-white p-12 rounded-3xl">
+      <h2 class="text-4xl font-bold mb-10">For Farmers</h2>
+      <ul class="space-y-6 text-lg">
+        <li>✓ Get 2–3× higher price</li>
+        <li>✓ Sell directly to shops, restaurants & consumers</li>
+        <li>✓ No commission agents</li>
+        <li>✓ Voice input in your language</li>
+        <li>✓ Fast payment via UPI</li>
+      </ul>
+      <button onclick="joinFarmerFlow()" 
+              class="mt-12 bg-white text-green-800 px-10 py-4 rounded-3xl font-semibold text-lg hover:scale-105 transition">
+        Join as Farmer →
+      </button>
+    </div>
+
+    <div class="bg-amber-800 text-white p-12 rounded-3xl">
+      <h2 class="text-4xl font-bold mb-10">For Buyers</h2>
+      <ul class="space-y-6 text-lg">
+        <li>✓ Fresher produce at better price</li>
+        <li>✓ Direct from local farmers</li>
+        <li>✓ Know exactly where it came from</li>
+        <li>✓ Real-time delivery tracking</li>
+        <li>✓ Buy in small or bulk quantity</li>
+      </ul>
+      <button onclick="browseProduceFlow()" 
+              class="mt-12 bg-white text-amber-800 px-10 py-4 rounded-3xl font-semibold text-lg hover:scale-105 transition">
+        Browse Fresh Produce →
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer (same as before) -->
+<footer class="bg-green-950 text-white py-16">
+  <div class="max-w-7xl mx-auto px-6 text-center">
+    <div class="flex justify-center mb-6">
+      <div class="w-14 h-14 bg-green-700 rounded-3xl flex items-center justify-center text-4xl">🌾</div>
+    </div>
+    <p class="text-3xl font-medium">VayalDirect</p>
+    <p class="mt-2 text-green-400">Empowering Indian Farmers • Built for Hackathon</p>
+    <div class="mt-12 text-sm text-green-500">© 2026 VayalDirect • Made with ❤️ in Coimbatore</div>
+  </div>
+</footer>
+
+<!-- ==================== NEW ROLE SELECTION MODAL ==================== -->
+<div id="roleModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+    <div class="p-8">
+      <h2 class="text-2xl font-bold text-center mb-8">Welcome to VayalDirect</h2>
+      <p class="text-center text-gray-600 mb-8">Are you a Farmer or a Buyer?</p>
+      
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Farmer Card -->
+        <button onclick="selectRole('farmer')" 
+                class="group p-8 border-2 border-green-200 hover:border-green-600 rounded-3xl transition-all hover:scale-105 text-left">
+          <div class="text-5xl mb-4">🧑‍🌾</div>
+          <h3 class="text-xl font-semibold text-green-800 mb-1">Farmer</h3>
+          <p class="text-sm text-gray-600">Sell your produce directly and earn more</p>
+        </button>
+
+        <!-- Buyer Card -->
+        <button onclick="selectRole('buyer')" 
+                class="group p-8 border-2 border-amber-200 hover:border-amber-600 rounded-3xl transition-all hover:scale-105 text-left">
+          <div class="text-5xl mb-4">🛒</div>
+          <h3 class="text-xl font-semibold text-amber-800 mb-1">Buyer</h3>
+          <p class="text-sm text-gray-600">Get fresh produce directly from farmers</p>
+        </button>
+      </div>
+    </div>
+    <div class="px-8 pb-8 text-center">
+      <button onclick="hideRoleModal()" class="text-gray-500 font-medium">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Role Confirmation Toast -->
+<div id="roleToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-800 text-white px-8 py-4 rounded-2xl shadow-xl flex items-center gap-3">
+  <span id="toastIcon" class="text-2xl"></span>
+  <div>
+    <p id="toastMessage" class="font-medium"></p>
+    <p id="toastSub" class="text-sm text-green-200"></p>
+  </div>
+</div>
+
+<!-- Registration Required Modal -->
+<div id="registerModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+    <div class="p-8 text-center">
+      <div class="text-6xl mb-4">🛒</div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Registration Required</h2>
+      <p class="text-gray-600 mb-8">To add items to your cart, you must register first as a farmer or buyer.</p>
+      
+      <div class="flex gap-4">
+        <button onclick="redirectToRegister()" 
+                class="flex-1 bg-green-700 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-800 transition">
+          Yes, Register
+        </button>
+        <button onclick="hideRegisterModal()" 
+                class="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-2xl font-semibold hover:bg-gray-50 transition">
+          Not Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Role Selection Modal
+function showRoleSelectionModal() {
+  document.getElementById('roleModal').classList.remove('hidden');
+}
+
+function hideRoleModal() {
+  document.getElementById('roleModal').classList.add('hidden');
+}
+
+function buildAuthUrl(role, tab) {
+  const base = role === 'farmer' ? 'farm_login.html' : 'buyer-login.html';
+  if (!tab) return base;
+  return `${base}?tab=${encodeURIComponent(tab)}`;
+}
+
+function selectRole(role) {
+  hideRoleModal();
+
+  const toast = document.getElementById('roleToast');
+  const icon = document.getElementById('toastIcon');
+  const message = document.getElementById('toastMessage');
+  const sub = document.getElementById('toastSub');
+
+  if (role === 'farmer') {
+    icon.textContent = '🧑‍🌾';
+    message.textContent = 'Farmer Flow Activated';
+    sub.textContent = 'Redirecting to Farmer Registration...';
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+      window.location.href = buildAuthUrl('farmer', 'register');
+    }, 800);
+    return;
+  }
+
+  icon.textContent = '🛒';
+  message.textContent = 'Buyer Flow Activated';
+  sub.textContent = 'Redirecting to Buyer Registration...';
+  toast.classList.remove('hidden');
+  setTimeout(() => {
+    window.location.href = buildAuthUrl('buyer', 'register');
+  }, 800);
+}
+
+// Specific Flows
+function startSellingFlow() {
+  // Start Selling → Always Farmer
+  hideRoleModal();
+  window.location.href = buildAuthUrl('farmer', 'login');
+}
+
+function joinFarmerFlow() {
+  // Join as Farmer → Farmer flow
+  window.location.href = buildAuthUrl('farmer', 'register');
+}
+
+function browseProduceFlow() {
+  // Browse Produce → Buyer flow
+  window.location.href = buildAuthUrl('buyer', 'login');
+}
+
+// Registration Modal Functions
+function showRegisterModal() {
+  document.getElementById('registerModal').classList.remove('hidden');
+}
+
+function hideRegisterModal() {
+  document.getElementById('registerModal').classList.add('hidden');
+}
+
+function redirectToRegister() {
+  hideRegisterModal();
+  showRoleSelectionModal();
+}
+
+// Keep your other scripts (language, live stats, addToCart etc.)
+// ... (you can keep your existing script section and just remove old login modal functions)
+function updateLiveStats() {
+  const saved = localStorage.getItem('vayal_users');
+  const total = saved ? Object.keys(JSON.parse(saved)).length : 0;
+  
+  document.getElementById('totalUsers').textContent = (1248 + total).toLocaleString();
+  document.getElementById('liveUsers').textContent = Math.floor(Math.random() * 35) + 25; // fake live users
+}
+
+  // Load default
+// Load default + restore from "server"
+window.onload = () => {
+  // Restore users from localStorage (fake server)
+  const savedUsers = localStorage.getItem('vayal_users');
+  if (savedUsers) {
+    registeredUsers = JSON.parse(savedUsers);
+  }
+
+  updateLiveStats();
+
+  // Load Google Translate
+  const script = document.createElement('script');
+  script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  document.head.appendChild(script);
+};
+function addToCart(itemName) {
+  // Show registration required modal instead of adding to cart
+  showRegisterModal();
+}
+// Google Translate
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'ta,hi,te,bn,ml'}, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', e => {
+        if (e.target.value === 'google') wrapper.classList.remove('hidden');
+        else wrapper.classList.add('hidden');
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en'
+        ? 'google'
+        : 'en';
+      selector.value = mode;
+      if (mode === 'google') wrapper.classList.remove('hidden');
+      else wrapper.classList.add('hidden');
+    }
+
+    window.onload = () => {
+      try {
+        if (typeof renderListings === 'function' && typeof listings !== 'undefined') {
+          renderListings(listings);
+        }
+      } catch (err) {
+        console.warn('renderListings error:', err.message);
+      }
+      restoreTranslationFromStorage();
+      initializeLanguageSelector();
+      const script = document.createElement('script');
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      document.head.appendChild(script);
+    }
+ </script>
+
+<!-- Hidden Google Translate -->
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buyer Onboarding - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-green-700 rounded-2xl flex items-center justify-center text-3xl">🌾</div>
+        <div>
+          <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+          <p class="text-xs text-amber-600 -mt-1">Buyer Bank Details Setup</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+          <option value="google">🌐 More Languages</option>
+        </select>
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-amber-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-2xl mx-auto px-6 py-12">
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-3xl shadow-xl p-10">
+
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
+          <span class="text-4xl">🏦</span>
+        </div>
+        <h1 class="text-3xl font-bold text-amber-900 mb-2">Bank Account Details</h1>
+        <p class="text-amber-700">We need your bank details to process payments for your purchases</p>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-8">
+        <p class="text-sm text-blue-800">🔒 <strong>Your information is secure:</strong> We use bank-level encryption to protect your details.</p>
+      </div>
+
+      <!-- Form -->
+      <div class="space-y-6">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+          <input type="text" id="bankName" placeholder="e.g. State Bank of India, HDFC Bank" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Account Holder Name</label>
+          <input type="text" id="accountName" placeholder="Full name as per bank records" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+          <p class="text-xs text-gray-500 mt-1">Must match your identity proof</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+          <input type="text" id="accountNumber" placeholder="e.g. 1234567890123456" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">IFSC Code</label>
+          <input type="text" id="ifscCode" placeholder="e.g. SBIN0001234" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+          <p class="text-xs text-gray-500 mt-1">Find it on your cheque book or bank website</p>
+        </div>
+
+        <!-- Checkbox -->
+        <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-200">
+          <input type="checkbox" id="termsCheck" class="mt-1">
+          <label for="termsCheck" class="text-sm text-gray-700">
+            I confirm that the bank details provided are correct and I authorize VayalDirect to use them for payment processing.
+          </label>
+        </div>
+
+        <button onclick="submitBankDetails()" 
+                class="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-2xl font-semibold text-lg transition active:scale-95">
+          Complete Setup & Go to Dashboard →
+        </button>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-10 pt-8 border-t border-gray-200 text-center">
+        <p class="text-sm text-gray-600">Questions? Contact us at <strong>support@vayaldirect.com</strong></p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const apiBase = 'http://localhost:3000';
+
+    function validateForm() {
+      const bankName = document.getElementById('bankName').value.trim();
+      const accountName = document.getElementById('accountName').value.trim();
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const ifscCode = document.getElementById('ifscCode').value.trim();
+      const termsCheck = document.getElementById('termsCheck').checked;
+
+      if (!bankName) return { valid: false, msg: 'Please enter bank name' };
+      if (!accountName) return { valid: false, msg: 'Please enter account holder name' };
+      if (!accountNumber || accountNumber.length < 10) return { valid: false, msg: 'Please enter valid account number' };
+      if (!ifscCode || ifscCode.length < 4) return { valid: false, msg: 'Please enter valid IFSC code' };
+      if (!termsCheck) return { valid: false, msg: 'Please confirm your bank details' };
+
+      return { valid: true };
+    }
+
+    async function submitBankDetails() {
+      const validation = validateForm();
+      if (!validation.valid) return alert(validation.msg);
+
+      let phone = localStorage.getItem('buyerPhone');
+      if (!phone) {
+        console.error('Phone not found in localStorage');
+        console.log('Available keys:', Object.keys(localStorage));
+        return alert('Session expired. Please login again. (Phone not found)');
+      }
+
+      // Normalize phone format to match backend
+      if (!phone.startsWith('+91')) {
+        phone = '+91' + phone.replace(/\D/g, '');
+      }
+      console.log('Submitting buyer with phone:', phone);
+
+      const data = {
+        phone,
+        bankDetails: {
+          bankName: document.getElementById('bankName').value.trim(),
+          accountName: document.getElementById('accountName').value.trim(),
+          accountNumber: document.getElementById('accountNumber').value.trim(),
+          ifscCode: document.getElementById('ifscCode').value.trim()
+        }
+      };
+
+      console.log('Submitting buyer onboarding:', data);
+
+      try {
+        const resp = await fetch(`${apiBase}/api/buyer/onboarding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        console.log('Response status:', resp.status);
+        const respData = await resp.json();
+        console.log('Response data:', respData);
+
+        if (resp.ok) {
+          // Update localStorage with returned buyer data
+          if (respData.buyer) {
+            localStorage.setItem('buyerData_' + respData.buyer.uid, JSON.stringify(respData.buyer));
+            const buyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers') || '{}');
+            buyers[phone] = respData.buyer;
+            localStorage.setItem('vayalRegisteredBuyers', JSON.stringify(buyers));
+          }
+          alert('✅ Bank details saved! Redirecting to dashboard...');
+          window.location.href = 'buyer.html';
+        } else {
+          const error = respData.error || 'Unknown error';
+          console.error('Backend error:', error);
+          alert('Error: ' + error);
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        // Fallback: update localStorage locally
+        const buyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers') || '{}');
+        if (buyers[phone]) {
+          buyers[phone].onboardingComplete = true;
+          buyers[phone].bankDetails = data.bankDetails;
+          localStorage.setItem('vayalRegisteredBuyers', JSON.stringify(buyers));
+          localStorage.setItem('buyerData_' + buyers[phone].uid, JSON.stringify(buyers[phone]));
+        }
+        alert('✅ Bank details saved locally! Redirecting to dashboard...');
+        window.location.href = 'buyer.html';
+      }
+    }
+
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'ta,hi,te,bn,ml'}, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', e => {
+        if (e.target.value === 'google') wrapper.classList.remove('hidden');
+        else wrapper.classList.add('hidden');
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en' ? 'google' : 'en';
+      selector.value = mode;
+      if (mode === 'google') wrapper.classList.remove('hidden');
+      else wrapper.classList.add('hidden');
+    }
+
+    restoreTranslationFromStorage();
+    initializeLanguageSelector();
+    const script = document.createElement('script');
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.head.appendChild(script);
+  </script>
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>

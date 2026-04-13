@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Login - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    .input-focus:focus {
+      border-color: #166534;
+      box-shadow: 0 0 0 4px rgba(22, 101, 52, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div class="bg-white shadow-sm py-4">
+    <div class="max-w-5xl mx-auto px-6 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-green-700 rounded-2xl flex items-center justify-center text-3xl">🌾</div>
+        <h1 class="text-2xl font-bold text-green-800">VayalDirect</h1>
+        <p class="text-xs text-green-600">Farmer Portal</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+          <option value="google">🌐 More Languages</option>
+        </select>
+
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" 
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+        <a href="home.html" class="text-green-700 font-medium flex items-center gap-2">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-12 items-center">
+    <!-- Left Side -->
+    <div class="hidden md:flex flex-col justify-center bg-gradient-to-br from-green-700 to-emerald-600 text-white p-10 rounded-3xl h-full">
+      <div class="text-6xl mb-8">🧑‍🌾</div>
+      <h2 class="text-4xl font-bold leading-tight mb-6">Welcome, Farmer!</h2>
+      <p class="text-green-100 text-lg">Sell directly to buyers in Coimbatore & nearby areas.<br>No middlemen • Better price • Fast UPI payment.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-3xl shadow-xl p-8 md:p-10">
+      <div class="flex border-b mb-8">
+        <button onclick="switchTab(0)" id="loginTab" class="flex-1 pb-4 text-lg font-semibold border-b-4 border-green-700 text-green-700">Login</button>
+        <button onclick="switchTab(1)" id="registerTab" class="flex-1 pb-4 text-lg font-semibold text-gray-500">New Farmer Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <h2 class="text-2xl font-bold text-green-900 mb-6">Welcome Back 👋</h2>
+        <div class="space-y-6">
+          <input type="tel" id="loginPhone" placeholder="+91 98765 43210" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-3xl input-focus text-lg">
+          <button onclick="sendOTP(false)" 
+                  class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-3xl font-semibold text-lg transition">
+            Send OTP
+          </button>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" class="hidden">
+        <h2 class="text-2xl font-bold text-green-900 mb-6">Join as Farmer 🌱</h2>
+        <div class="space-y-6">
+          <input type="text" id="regName" placeholder="Full Name (e.g. Karthick G)" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-3xl input-focus">
+          <input type="tel" id="regPhone" placeholder="+91 98765 43210" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-3xl input-focus text-lg">
+          <input type="text" id="regVillage" placeholder="Village / Area (e.g. Vadavalli, Coimbatore)" 
+                 class="w-full px-5 py-4 border border-gray-300 rounded-3xl input-focus">
+          
+          <button onclick="sendOTP(true)" 
+                  class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-3xl font-semibold text-lg transition">
+            Send OTP & Register
+          </button>
+        </div>
+      </div>
+
+      <!-- OTP Input -->
+      <div id="otpSection" class="hidden mt-8 space-y-4">
+        <label class="block text-sm font-medium">Enter OTP</label>
+        <input type="text" id="otpInput" maxlength="6" placeholder="123456" 
+               class="w-full p-6 text-3xl text-center border border-gray-300 rounded-3xl tracking-widest input-focus">
+        <button onclick="verifyOTP()" 
+                class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-3xl font-semibold">
+          Verify OTP & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invisible reCAPTCHA -->
+  <div id="recaptcha-container"></div>
+
+  <script>
+    // ================== YOUR FIREBASE CONFIG ==================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBD8qgUhCnQGwu3u2-ObEEevEeMNP5MZps",
+      authDomain: "vayaldirect-hackathon.firebaseapp.com",
+      databaseURL: "https://vayaldirect-hackathon-default-rtdb.firebaseio.com",
+      projectId: "vayaldirect-hackathon",
+      storageBucket: "vayaldirect-hackathon.firebasestorage.app",
+      messagingSenderId: "501470238040",
+      appId: "1:501470238040:web:1bbb2931ca4be798fb812d",
+      measurementId: "G-9B0RDFZWPC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let confirmationResult = null;
+    let isRegistering = false;
+
+    function switchTab(n) {
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("registerForm");
+
+        const loginTab = document.getElementById("loginTab");
+        const registerTab = document.getElementById("registerTab");
+
+        // Switch forms
+        loginForm.classList.toggle("hidden", n !== 0);
+        registerForm.classList.toggle("hidden", n !== 1);
+
+        // Hide OTP
+        const otp = document.getElementById("otpSection");
+        if (otp) otp.classList.add("hidden");
+
+        // ✅ Move green underline
+        if (n === 0) {
+          // Login active
+          loginTab.classList.add(
+            "border-b-4",
+            "border-green-700",
+            "text-green-700",
+          );
+          loginTab.classList.remove("text-gray-500");
+
+          registerTab.classList.remove(
+            "border-b-4",
+            "border-green-700",
+            "text-green-700",
+          );
+          registerTab.classList.add("text-gray-500");
+        } else {
+          // Register active
+          registerTab.classList.add(
+            "border-b-4",
+            "border-green-700",
+            "text-green-700",
+          );
+          registerTab.classList.remove("text-gray-500");
+
+          loginTab.classList.remove(
+            "border-b-4",
+            "border-green-700",
+            "text-green-700",
+          );
+          loginTab.classList.add("text-gray-500");
+        }
+      }
+
+    const apiBase = 'http://localhost:3000';
+
+    async function sendOTP(registerMode) {
+      isRegistering = registerMode;
+      const phoneInput = registerMode ? document.getElementById('regPhone') : document.getElementById('loginPhone');
+      let phone = phoneInput.value.trim();
+
+      if (!phone) return alert("Please enter phone number");
+      if (!phone.startsWith('+91')) phone = '+91' + phone.replace(/\D/g, '');
+
+      const localFarmers = JSON.parse(localStorage.getItem('vayalRegisteredFarmers')) || {};
+      let hasLocal = !!localFarmers[phone];
+
+      if (registerMode && hasLocal) {
+        alert("This number is already registered. Please login instead.");
+        switchTab(0);
+        document.getElementById('loginPhone').value = phone;
+        return;
+      }
+
+      let backendOK = false;
+      let backendData = null;
+
+      try {
+        const resp = await fetch(`${apiBase}/api/farmer/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, registerMode })
+        });
+        const data = await resp.json();
+
+        if (resp.ok) {
+          backendOK = true;
+          backendData = data;
+        } else {
+          if (!registerMode && resp.status === 404) {
+            alert("No farmer found with this number. Please register first.");
+            switchTab(1);
+            return;
+          }
+          if (registerMode && resp.status === 409) {
+            alert("This number is already registered. Please login instead.");
+            switchTab(0);
+            document.getElementById('loginPhone').value = phone;
+            return;
+          }
+          console.warn('Backend send-otp failed:', data.error);
+        }
+      } catch (err) {
+        console.warn('Backend unavailable; falling back to local demo:', err.message);
+      }
+
+      if (!backendOK) {
+        if (!registerMode && !hasLocal) {
+          alert("No farmer found with this number. Please register first.");
+          switchTab(1);
+          return;
+        }
+      }
+
+      document.getElementById('otpSection').classList.remove('hidden');
+      alert("✅ OTP Sent!\n\nUse 123456");
+    }
+
+    async function verifyOTP() {
+      const code = document.getElementById('otpInput').value.trim();
+      if (!code) return alert("Please enter OTP");
+      if (code !== '123456') return alert("Invalid OTP. Use 123456 for demo.");
+
+      let phone = isRegistering ? document.getElementById('regPhone').value.trim() : document.getElementById('loginPhone').value.trim();
+      if (!phone.startsWith('+91')) phone = '+91' + phone.replace(/\D/g, '');
+
+      const name = document.getElementById('regName').value.trim() || 'New Farmer';
+      const village = document.getElementById('regVillage').value.trim() || 'Coimbatore';
+
+      let farmerData = null;
+
+      try {
+        const resp = await fetch(`${apiBase}/api/farmer/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, code, registerMode: isRegistering, name, village })
+        });
+
+        const result = await resp.json();
+        console.log('Backend response:', resp.status, result);
+        
+        if (resp.ok && result.farmer) {
+          farmerData = result.farmer;
+          console.log('Using backend farmer data:', farmerData);
+          // For registration, ensure onboardingComplete is false
+          if (isRegistering) {
+            farmerData.onboardingComplete = false;
+            console.log('Set onboardingComplete to false for registration');
+          }
+        } else {
+          if (!isRegistering && resp.status === 404) {
+            // Backend says farmer not registered, fallback to local if possible
+            console.warn('Farmer not found in backend');
+          } else if (isRegistering && resp.status === 409) {
+            alert('Farmer already registered. Please login.');
+            switchTab(0);
+            return;
+          } else {
+            console.warn('verify-otp failed:', result.error);
+          }
+        }
+      } catch (err) {
+        console.warn('Backend verify-otp unavailable, using local fallback', err.message);
+      }
+
+      const localFarmers = JSON.parse(localStorage.getItem('vayalRegisteredFarmers')) || {};
+
+      if (!farmerData) {
+        if (localFarmers[phone]) {
+          farmerData = localFarmers[phone];
+          if (farmerData.onboardingComplete === undefined) {
+            farmerData.onboardingComplete = false;
+          }
+        } else if (isRegistering) {
+          farmerData = {
+            uid: 'local-' + phone.replace(/\D/g, ''),
+            name,
+            phone,
+            village,
+            mainCrop: 'Coconut',
+            farmSize: '2',
+            totalEarnings: 0,
+            ordersToday: 0,
+            rating: '4.9',
+            orderHistory: [],
+            joined: new Date().toISOString(),
+            onboardingComplete: false
+          };
+        } else {
+          // No backend/local farmer found in login, promote to registration so new user still gets onboarding
+          const createNew = confirm('No account found for this phone. Do you want to register as a new farmer instead?');
+          if (!createNew) return;
+          isRegistering = true;
+          farmerData = {
+            uid: 'local-' + phone.replace(/\D/g, ''),
+            name,
+            phone,
+            village,
+            mainCrop: 'Coconut',
+            farmSize: '2',
+            totalEarnings: 0,
+            ordersToday: 0,
+            rating: '4.9',
+            orderHistory: [],
+            joined: new Date().toISOString(),
+            onboardingComplete: false
+          };
+        }
+      }
+
+      farmerData.uid = farmerData.uid || ('local-' + phone.replace(/\D/g, ''));
+      localFarmers[phone] = farmerData;
+      localStorage.setItem('vayalRegisteredFarmers', JSON.stringify(localFarmers));
+
+      // IMPORTANT: Store phone BEFORE redirect
+      localStorage.setItem('farmerPhone', phone);
+      localStorage.setItem('currentFarmerUid', farmerData.uid);
+      localStorage.setItem('currentFarmerPhone', phone);
+      localStorage.setItem('farmerData_' + farmerData.uid, JSON.stringify(farmerData));
+
+      alert(`🎉 Welcome, ${farmerData.name}!`);
+      console.log('Final farmerData:', farmerData);
+      console.log('isRegistering:', isRegistering, 'onboardingComplete:', farmerData.onboardingComplete);
+
+      if (farmerData.onboardingComplete === undefined) {
+        farmerData.onboardingComplete = false;
+      }
+
+      // Save completed state back to local fallback store
+      localFarmers[phone] = farmerData;
+      localStorage.setItem('vayalRegisteredFarmers', JSON.stringify(localFarmers));
+
+      const needsOnboarding = !farmerData.onboardingComplete;
+      if (needsOnboarding) {
+        console.log('Redirecting to farmer-onboarding.html (needs onboarding)');
+        alert('Redirecting to onboarding...');
+        window.location.replace('farmer-onboarding.html');
+      } else {
+        console.log('Redirecting to farm.html (already onboarded)');
+        alert('Redirecting to dashboard...');
+        window.location.replace('farm.html');
+      }
+    }
+
+    // Initialize
+    function getInitialTab() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('tab') === 'register' ? 1 : 0;
+    }
+
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'ta,hi,te,bn,ml',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      location.reload();
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', (e) => {
+        if (e.target.value === 'google') {
+          wrapper.classList.remove('hidden');
+        } else {
+          wrapper.classList.add('hidden');
+        }
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en'
+        ? 'google'
+        : 'en';
+      selector.value = mode;
+      if (mode === 'google') {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
+    }
+
+    window.onload = () => {
+      switchTab(getInitialTab());
+      restoreTranslationFromStorage();
+      initializeLanguageSelector();
+      const script = document.createElement('script');
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      document.head.appendChild(script);
+    };
+  </script>
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>

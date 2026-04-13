@@ -1,0 +1,18 @@
+{
+  "name": "vayaldirect-backend",
+  "version": "1.0.0",
+  "description": "Mock backend for VayalDirect demo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "mongoose": "^9.3.3",
+    "twilio": "^5.13.1"
+  }
+}

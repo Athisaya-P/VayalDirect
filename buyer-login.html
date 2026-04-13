@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buyer Login - VayalDirect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    
+    .input-focus:focus {
+      border-color:green;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+    }
+
+    .tab-active {
+      border-bottom: 4px solid #f59e0b;
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+
+  <!-- Top Bar -->
+  <div class="bg-white shadow-sm py-4">
+    <div class="max-w-5xl mx-auto px-6 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+          <div class="w-11 h-11 bg-green-700 rounded-2xl flex items-center justify-center text-3xl shadow-inner">🌾</div>
+       
+        <div>
+          <h1 class="text-3xl font-bold text-green-800">VayalDirect</h1>
+          <p class="text-xs text-amber-600 -mt-1">Buyer Portal</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <select id="languageSelect" class="px-4 py-2 border border-green-200 text-green-700 rounded-2xl bg-white focus:outline-none text-sm font-medium">
+          <option value="en">English</option>
+          <option value="google">🌐 More Languages</option>
+        </select>
+
+        <div id="gt-wrapper" class="relative hidden">
+          <button onclick="toggleGTPanel()" 
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-green-200 rounded-2xl text-sm font-medium text-green-700 hover:border-green-300">
+            🌐 Translate
+          </button>
+          <div id="gt-panel" class="absolute top-full right-0 mt-2 bg-white border border-green-200 rounded-2xl shadow-xl py-2 w-60 hidden">
+            <button onclick="applyGoogleTranslate('ta')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Tamil</button>
+            <button onclick="applyGoogleTranslate('hi')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Hindi</button>
+            <button onclick="applyGoogleTranslate('te')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Telugu</button>
+            <button onclick="applyGoogleTranslate('bn')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇧🇩 Bengali</button>
+            <button onclick="applyGoogleTranslate('ml')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50">🇮🇳 Malayalam</button>
+            <div class="border-t my-1"></div>
+            <button onclick="applyGoogleTranslate('en')" class="block w-full text-left px-5 py-2.5 hover:bg-green-50 text-gray-500">Reset to English</button>
+          </div>
+        </div>
+        <a href="home.html" class="text-amber-700 hover:text-amber-800 font-medium flex items-center gap-2">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 py-12">
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-3xl shadow-sm">
+        <span class="text-5xl">🛍️</span>
+        <span id="pageTitle" class="text-2xl font-semibold text-amber-900">Welcome to Buyer Portal</span>
+      </div>
+      <p id="pageSubtitle" class="text-amber-700 mt-4">Get fresh produce directly from farmers • Fair price • Fast delivery</p>
+    </div>
+
+    <!-- Main Card - Reduced Width -->
+    <div class="card bg-white rounded-3xl shadow-xl overflow-hidden">
+
+      <!-- Tabs -->
+      <div class="flex border-b">
+        <button onclick="switchBuyerTab(0)" id="existingTab"
+          class="flex-1 py-6 text-lg font-semibold tab-active flex items-center justify-center gap-2">
+          🔑 Existing Buyer
+        </button>
+        <button onclick="switchBuyerTab(1)" id="newTab"
+          class="flex-1 py-6 text-lg font-semibold text-gray-500 flex items-center justify-center gap-2">
+          🌱 New Buyer
+        </button>
+      </div>
+
+      <!-- Existing Buyer Login -->
+      <div id="existingForm" class="p-10 fade-in">
+        <h2 class="text-2xl font-bold text-amber-900 mb-6 text-center">Welcome Back 👋</h2>
+        
+        <div class="space-y-6">
+            
+          <div>
+            <label id="existingNameLabel" class="block text-sm font-medium text-gray-600 mb-1.5">Buyer Name</label>
+            <input type="text" id="existingName" placeholder="Enter your Name" 
+              class="w-full px-5 py-4 border border-gray-300 rounded-2xl input-focus">
+          </div>
+          <div>
+            <label id="existingPhoneLabel" class="block text-sm font-medium text-gray-600 mb-1.5">Mobile Number</label>
+            <div class="flex gap-3">
+              <select class="px-5 py-4 border border-gray-300 rounded-2xl bg-white text-sm">
+                <option value="+91">🇮🇳 +91</option>
+              </select>
+              <input type="tel" id="existingPhone" placeholder="98765 43210" 
+                class="flex-1 px-5 py-4 border border-gray-300 rounded-2xl input-focus text-lg">
+            </div>
+          </div>
+
+
+          <button id="existingSendOtpButton" onclick="handleExistingLogin()" 
+            class="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-3xl font-semibold text-lg transition active:scale-95">
+            Send OTP
+          </button>
+        </div>
+
+        <!-- OTP Section -->
+        <div id="existingOtpSection" class="hidden mt-8">
+          <label id="existingOtpLabel" class="block text-sm font-medium text-gray-600 mb-2">Enter 6-digit OTP</label>
+          <input type="text" id="existingOtpInput" maxlength="6" placeholder="123456" 
+            class="w-full p-6 text-3xl text-center border border-gray-300 rounded-3xl tracking-widest input-focus">
+          <button id="verifyExistingButton" onclick="verifyBuyerOTP(false)" 
+            class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-3xl font-semibold text-lg transition active:scale-95">
+            Verify OTP & Login
+          </button>
+        </div>
+
+        <p id="existingMessage" class="text-center text-red-600 text-sm mt-4 hidden"></p>
+      </div>
+
+      <!-- New Buyer Registration -->
+      <div id="newForm" class="p-10 hidden fade-in">
+        <h2 id="newBuyerTitle" class="text-2xl font-bold text-amber-900 mb-6 text-center">Create New Buyer Account 🌱</h2>
+        
+        <div class="space-y-6">
+          <div>
+            <label id="newNameLabel" class="block text-sm font-medium text-gray-600 mb-1.5">Full Name</label>
+            <input type="text" id="newName" placeholder="e.g. Priya Sharma" 
+              class="w-full px-5 py-4 border border-gray-300 rounded-2xl input-focus">
+          </div>
+
+          <div>
+            <label id="newEmailLabel" class="block text-sm font-medium text-gray-600 mb-1.5">Email ID</label>
+            <input type="email" id="newEmail" placeholder="priya.buyer@gmail.com" required
+              class="w-full px-5 py-4 border border-gray-300 rounded-2xl input-focus">
+          </div>
+
+          <div>
+            <label id="newPhoneLabel" class="block text-sm font-medium text-gray-600 mb-1.5">Mobile Number</label>
+            <div class="flex gap-3">
+              <select class="px-5 py-4 border border-gray-300 rounded-2xl bg-white text-sm">
+                <option value="+91">🇮🇳 +91</option>
+              </select>
+              <input type="tel" id="newPhone" placeholder="98765 43210" 
+                class="flex-1 px-5 py-4 border border-gray-300 rounded-2xl input-focus text-lg">
+            </div>
+          </div>
+
+          <button id="newRegisterButton" onclick="handleNewBuyerRegister()" 
+            class="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-3xl font-semibold text-lg transition active:scale-95">
+            Send OTP & Register
+          </button>
+        </div>
+
+        <!-- OTP Section -->
+        <div id="newOtpSection" class="hidden mt-8">
+          <label id="newOtpLabel" class="block text-sm font-medium text-gray-600 mb-2">Enter 6-digit OTP</label>
+          <input type="text" id="newOtpInput" maxlength="6" placeholder="123456" 
+            class="w-full p-6 text-3xl text-center border border-gray-300 rounded-3xl tracking-widest input-focus">
+          <button id="verifyNewButton" onclick="verifyBuyerOTP(true)" 
+            class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-3xl font-semibold text-lg transition active:scale-95">
+            Verify OTP & Create Account
+          </button>
+        </div>
+
+        <p id="newMessage" class="text-center text-red-600 text-sm mt-4 hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simulated registered users (in real app, this will come from Firebase)
+    const apiBase = 'http://localhost:3000';
+    let registeredBuyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+
+    const buyerLoginTranslations = {
+      en: {
+        pageTitle: 'Welcome to Buyer Portal',
+        pageSubtitle: 'Get fresh produce directly from farmers • Fair price • Fast delivery',
+        existingTab: '🔑 Existing Buyer',
+        newTab: '🌱 New Buyer',
+        existingNameLabel: 'Buyer Name',
+        existingPhoneLabel: 'Mobile Number',
+        existingSendOtpButton: 'Send OTP',
+        existingOtpLabel: 'Enter 6-digit OTP',
+        verifyExistingButton: 'Verify OTP & Login',
+        newBuyerTitle: 'Create New Buyer Account 🌱',
+        newNameLabel: 'Full Name',
+        newEmailLabel: 'Email ID',
+        newPhoneLabel: 'Mobile Number',
+        newPasswordLabel: 'Create Password',
+        newRegisterButton: 'Send OTP & Register',
+        newOtpLabel: 'Enter 6-digit OTP',
+        verifyNewButton: 'Verify OTP & Create Account'
+      },
+      ta: {
+        pageTitle: 'வாங்குபவர் போர்டலுக்கு வரவேற்கிறோம்',
+        pageSubtitle: 'விவசாயிகளிடமிருந்து நேரடியாக புதுப்பிக்கப்படுங்கள் • நியாயமான விலை • விரைவான டெலிவரி',
+        existingTab: '🔑 தற்போதைய வாங்குபவர்',
+        newTab: '🌱 புதிய வாங்குபவர்',
+        existingNameLabel: 'வாங்குபவரின் பெயர்',
+        existingPhoneLabel: 'மொபைல் எண்',
+        existingSendOtpButton: 'OTP அனுப்பு',
+        existingOtpLabel: '6 இலக்க OTP உள்ளிடவும்',
+        verifyExistingButton: 'OTP சரிபார் & உள்நுழைய',
+        newBuyerTitle: 'புதிய வாங்குபவர் கணக்கை உருவாக்கவும் 🌱',
+        newNameLabel: 'முழு பெயர்',
+        newEmailLabel: 'மின்னஞ்சல் ID',
+        newPhoneLabel: 'மொபைல் எண்',
+        newPasswordLabel: 'கடவுச்சொல்லை உருவாக்கவும்',
+        newRegisterButton: 'OTP அனுப்பு & பதிவு செய்',
+        newOtpLabel: '6 இலக்க OTP உள்ளிடவும்',
+        verifyNewButton: 'OTP சரிபார் & கணக்கு உருவாக்கு'
+      },
+      hi: {
+        pageTitle: 'बायर पोर्टल में आपका स्वागत है',
+        pageSubtitle: 'किसानों से सीधे ताजा उत्पाद पाएं • सही दाम • तेज़ डिलीवरी',
+        existingTab: '🔑 मौजूदा खरीदार',
+        newTab: '🌱 नया खरीदार',
+        existingNameLabel: 'खरीदार का नाम',
+        existingPhoneLabel: 'मोबाइल नंबर',
+        existingSendOtpButton: 'OTP भेजें',
+        existingOtpLabel: '6-अंकीय OTP दर्ज करें',
+        verifyExistingButton: 'OTP सत्यापित करें और लॉग इन करें',
+        newBuyerTitle: 'नया खरीदार खाता बनाएं 🌱',
+        newNameLabel: 'पूरा नाम',
+        newEmailLabel: 'ईमेल आईडी',
+        newPhoneLabel: 'मोबाइल नंबर',
+        newPasswordLabel: 'पासवर्ड बनाएं',
+        newRegisterButton: 'OTP भेजें और रजिस्टर करें',
+        newOtpLabel: '6-अंकीय OTP दर्ज करें',
+        verifyNewButton: 'OTP सत्यापित करें और खाता बनाएँ'
+      },
+      te: {
+        pageTitle: 'బయర్ పోర్టల్‌కు స్వాగతం',
+        pageSubtitle: 'రైతుల వద్ద నుండి నేరుగా తాజా ఉత్పత్తులు పొందండి • సరైన ధర • వేగవంతమైన డెలివరీ',
+        existingTab: '🔑 ఉన్న కొనుగోలుదారు',
+        newTab: '🌱 కొత్త కొనుగోలుదారు',
+        existingNameLabel: 'ఖరీదుదారు పేరు',
+        existingPhoneLabel: 'మొబైల్ నెంబర్',
+        existingSendOtpButton: 'OTP పంపు',
+        existingOtpLabel: '6 అంకెల OTP నమోదు చేయండి',
+        verifyExistingButton: 'OTP ను ధృవీకరించండి & లాగిన్',
+        newBuyerTitle: 'కొత్త కొనుగోలుదారు ఖాతాను సృష్టించండి 🌱',
+        newNameLabel: 'పూర్తి పేరు',
+        newEmailLabel: 'ఇమెయిల్ ID',
+        newPhoneLabel: 'మొబైల్ నెంబర్',
+        newPasswordLabel: 'పాస్వర్డ్ తయారుచేసుకోండి',
+        newRegisterButton: 'OTP పంపు & నమోదు చేయండి',
+        newOtpLabel: '6 అంకెల OTP నమోదు చేయండి',
+        verifyNewButton: 'OTP ధృవీకరించండి & ఖాతా సృష్టించండి'
+      },
+      bn: {
+        pageTitle: 'বায়ার পোর্টালে স্বাগতম',
+        pageSubtitle: 'কৃষকদের কাছ থেকে সরাসরি তাজা পণ্য পান • সঠিক মূল্য • দ্রুত ডেলিভারি',
+        existingTab: '🔑 বিদ্যমান ক্রেতা',
+        newTab: '🌱 নতুন ক্রেতা',
+        existingNameLabel: 'ক্রেতার নাম',
+        existingPhoneLabel: 'মোবাইল নম্বর',
+        existingSendOtpButton: 'OTP পাঠান',
+        existingOtpLabel: '6 অঙ্কের OTP লিখুন',
+        verifyExistingButton: 'OTP যাচাই করুন এবং লগইন করুন',
+        newBuyerTitle: 'নতুন ক্রেতার অ্যাকাউন্ট তৈরি করুন 🌱',
+        newNameLabel: 'পূর্ণ নাম',
+        newEmailLabel: 'ইমেল আইডি',
+        newPhoneLabel: 'মোবাইল নম্বর',
+        newPasswordLabel: 'পাসওয়ার্ড তৈরি করুন',
+        newRegisterButton: 'OTP পাঠান এবং নিবন্ধন করুন',
+        newOtpLabel: '6 অঙ্কের OTP লিখুন',
+        verifyNewButton: 'OTP যাচাই করুন এবং অ্যাকাউন্ট তৈরি করুন'
+      },
+      ml: {
+        pageTitle: 'ബയറർ പോർട്ടലിലേക്ക് സ്വാഗതം',
+        pageSubtitle: 'ശ്വാസങ്ങളിലൂടെയുള്ള ഉൽപ്പന്നങ്ങൾ നേരിട്ട് നേടൂ • ന്യായമായ വില • വേഗത്തിലുള്ള ഡെലിവറി',
+        existingTab: '🔑 നിലവിലുള്ള ബയറർ',
+        newTab: '🌱 പുതിയ ബയറർ',
+        existingNameLabel: 'ബയററിന്റെ പേര്',
+        existingPhoneLabel: 'ಮೊಬೈಲ್ നമ്പർ',
+        existingSendOtpButton: 'OTP അയക്കൂ',
+        existingOtpLabel: '6 അക്ക OTP നൽകുക',
+        verifyExistingButton: 'OTP സ്ഥിരീകരിച്ച് ലോഗിൻ ചെയ്യൂ',
+        newBuyerTitle: 'പുതിയ ബയറർ അക്കൗണ്ട് സൃഷ്ടിക്കുക 🌱',
+        newNameLabel: 'പൂർണ്ണ പേര്',
+        newEmailLabel: 'ഇമെയിൽ ഐഡി',
+        newPhoneLabel: 'ಮೊಬೈಲ್ നമ്പർ',
+        newPasswordLabel: 'പാസ്വേഡ് സൃഷ്ടിക്കുക',
+        newRegisterButton: 'OTP അയക്കൂ & രജിസ്റ്റർ ചെയ്യൂ',
+        newOtpLabel: '6 അക്ക OTP നൽകുക',
+        verifyNewButton: 'OTP സ്ഥിരീകരിച്ച് അക്കൗണ്ട് സൃഷ്ടിക്കൂ'
+      }
+    };
+
+    function applyLocalBuyerLoginTranslation(lang) {
+      const translations = buyerLoginTranslations[lang] || buyerLoginTranslations.en;
+      Object.entries(translations).forEach(([key, value]) => {
+        const el = document.getElementById(key);
+        if (!el) return;
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          el.placeholder = value;
+        } else {
+          el.textContent = value;
+        }
+      });
+      document.documentElement.lang = lang;
+    }
+
+    function updateBuyerLoginPlaceholders(lang) {
+      const translations = buyerLoginTranslations[lang] || buyerLoginTranslations.en;
+      const placeholderMap = {
+        existingName: 'Enter your Name',
+        existingPhone: '98765 43210',
+        existingOtpInput: '123456',
+        newName: 'e.g. Priya Sharma',
+        newEmail: 'priya.buyer@gmail.com',
+        newPhone: '98765 43210',
+        newOtpInput: '123456'
+      };
+      Object.entries(placeholderMap).forEach(([id, fallback]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.placeholder = translations[id] || fallback;
+      });
+    }
+
+    function setBuyerLoginLanguage(lang) {
+      applyLocalBuyerLoginTranslation(lang);
+      updateBuyerLoginPlaceholders(lang);
+    }
+
+    function normalizePhone(phone) {
+      if (!phone) return '';
+      const cleaned = phone.toString().replace(/\D/g, '');
+      if (cleaned.length === 10) {
+        return '+91' + cleaned;
+      }
+      if (cleaned.length === 12 && cleaned.startsWith('91')) {
+        return '+' + cleaned;
+      }
+      return '';
+    }
+
+    function isValidTenDigitPhone(phone) {
+      return !!phone && phone.replace(/\D/g, '').length === 10;
+    }
+
+    function clearInvalidBuyerSession() {
+      const current = localStorage.getItem('currentBuyerPhone') || localStorage.getItem('buyerPhone');
+      if (!current) return;
+      if (!isValidTenDigitPhone(current)) {
+        localStorage.removeItem('currentBuyerPhone');
+        localStorage.removeItem('buyerPhone');
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('buyerData_')) {
+            try {
+              const stored = JSON.parse(localStorage.getItem(key));
+              if (!stored || !isValidTenDigitPhone(stored.phone)) {
+                localStorage.removeItem(key);
+              }
+            } catch (e) {
+              localStorage.removeItem(key);
+            }
+          }
+        });
+      }
+    }
+
+    // Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBD8qgUhCnQGwu3u2-ObEEevEeMNP5MZps",
+      authDomain: "vayaldirect-hackathon.firebaseapp.com",
+      databaseURL: "https://vayaldirect-hackathon-default-rtdb.firebaseio.com",
+      projectId: "vayaldirect-hackathon",
+      storageBucket: "vayaldirect-hackathon.firebasestorage.app",
+      messagingSenderId: "501470238040",
+      appId: "1:501470238040:web:1bbb2931ca4be798fb812d",
+      measurementId: "G-9B0RDFZWPC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let confirmationResult = null;
+
+    function switchBuyerTab(tab) {
+      console.log('Switching to tab:', tab);
+      
+      const existingForm = document.getElementById('existingForm');
+      const newForm = document.getElementById('newForm');
+      const existingTab = document.getElementById('existingTab');
+      const newTab = document.getElementById('newTab');
+      
+      if (tab === 0) {
+        existingForm.classList.remove('hidden');
+        newForm.classList.add('hidden');
+        existingTab.classList.add('tab-active');
+        newTab.classList.remove('tab-active');
+      } else if (tab === 1) {
+        existingForm.classList.add('hidden');
+        newForm.classList.remove('hidden');
+        existingTab.classList.remove('tab-active');
+        newTab.classList.add('tab-active');
+      }
+
+      document.getElementById('existingMessage').classList.add('hidden');
+      document.getElementById('newMessage').classList.add('hidden');
+      document.getElementById('existingOtpSection').classList.add('hidden');
+      document.getElementById('newOtpSection').classList.add('hidden');
+    }
+
+    // Handle Existing User Login
+    async function handleExistingLogin() {
+      let phone = document.getElementById('existingPhone').value.trim();
+      const messageEl = document.getElementById('existingMessage');
+
+      phone = normalizePhone(phone);
+      if (!phone) {
+        messageEl.textContent = "Please enter a valid 10-digit mobile number";
+        messageEl.classList.remove('hidden');
+        return;
+      }
+
+      const registeredBuyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+      const localExists = !!registeredBuyers[phone];
+
+      let serverExists = false;
+      try {
+        const respLogin = await fetch(`${apiBase}/api/buyer/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        serverExists = respLogin.ok;
+      } catch (err) {
+        console.warn('Server login unavailable, using local fallback:', err.message);
+      }
+
+      if (!serverExists && !localExists) {
+        messageEl.textContent = "No account found with this number. Please register as a new buyer.";
+        messageEl.classList.remove('hidden');
+        return;
+      }
+
+      // Send OTP either way.
+      try {
+        const resp = await fetch(`${apiBase}/api/buyer/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, registerMode: false })
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          const errorMessage = data.error || 'Unable to send OTP right now. Please try again.';
+          if (!localExists) {
+            messageEl.textContent = errorMessage;
+            messageEl.classList.remove('hidden');
+            return;
+          }
+          console.warn('Backend send-otp returned error, using local OTP fallback:', errorMessage);
+          messageEl.textContent = 'OTP service unavailable, please use demo OTP 123456.';
+          messageEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.warn('Backend send-otp failed:', err.message);
+        if (!localExists) {
+          messageEl.textContent = 'Unable to send OTP right now. Please try again.';
+          messageEl.classList.remove('hidden');
+          return;
+        }
+        messageEl.textContent = 'OTP service unavailable, please use demo OTP 123456.';
+        messageEl.classList.remove('hidden');
+      }
+
+      document.getElementById('existingOtpSection').classList.remove('hidden');
+      alert("✅ OTP Sent! (Demo: Use 123456)");
+    }
+
+    // Handle New Buyer Registration
+    async function handleNewBuyerRegister() {
+      let phone = document.getElementById('newPhone').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const messageEl = document.getElementById('newMessage');
+
+      if (!phone || !name || !email) {
+        messageEl.textContent = "Please fill all fields";
+        messageEl.classList.remove('hidden');
+        return;
+      }
+
+      phone = normalizePhone(phone);
+      if (!phone) {
+        messageEl.textContent = "Please enter a valid 10-digit mobile number";
+        messageEl.classList.remove('hidden');
+        return;
+      }
+
+      const registeredBuyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+      if (registeredBuyers[phone]) {
+        messageEl.textContent = "This number is already registered. Please login as existing buyer.";
+        messageEl.classList.remove('hidden');
+        switchBuyerTab(0);
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${apiBase}/api/buyer/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        if (resp.ok) {
+          messageEl.textContent = "This number is already registered. Please login as existing buyer.";
+          messageEl.classList.remove('hidden');
+          switchBuyerTab(0);
+          return;
+        }
+      } catch (err) {
+        console.warn('Server login unavailable, proceeding with registration flow:', err.message);
+      }
+
+      const respSend = await fetch(`${apiBase}/api/buyer/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, registerMode: true })
+      });
+
+      if (!respSend.ok) {
+        const data = await respSend.json().catch(() => ({}));
+        const errorMessage = data.error || 'Unable to send OTP';
+        if (respSend.status === 409) {
+          messageEl.textContent = errorMessage;
+          messageEl.classList.remove('hidden');
+          return;
+        }
+        console.warn('Backend send-otp failed for registration, using demo fallback:', errorMessage);
+        document.getElementById('newOtpSection').classList.remove('hidden');
+        messageEl.textContent = 'OTP service unavailable, please use demo OTP 123456.';
+        messageEl.classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('newOtpSection').classList.remove('hidden');
+      messageEl.classList.add('hidden');
+      alert("✅ OTP Sent! (Demo: Use 123456)");
+    }
+
+    // Verify OTP
+    async function verifyBuyerOTP(isNewUser) {
+      const messageEl = document.getElementById(isNewUser ? 'newMessage' : 'existingMessage');
+      const otp = document.getElementById(isNewUser ? 'newOtpInput' : 'existingOtpInput').value.trim();
+
+      if (otp !== "123456") {
+        alert("❌ Wrong OTP. Use 123456 for demo.");
+        return;
+      }
+
+      let phone = isNewUser ?
+        document.getElementById('newPhone').value.trim() :
+        document.getElementById('existingPhone').value.trim();
+      phone = normalizePhone(phone);
+
+      let name = 'Buyer';
+      let email = '';
+      const registeredBuyers = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+      if (isNewUser) {
+        name = document.getElementById('newName').value.trim() || 'New Buyer';
+        email = document.getElementById('newEmail').value.trim();
+        if (!email) {
+          alert("Please enter your email address.");
+          return;
+        }
+      } else {
+        // existing buyer should use stored data if possible
+        if (registeredBuyers[phone]) {
+          name = registeredBuyers[phone].name || name;
+          email = registeredBuyers[phone].email || '';
+        }
+      }
+
+      let buyerData = null;
+
+      try {
+        const resp = await fetch(`${apiBase}/api/buyer/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, code: otp, registerMode: isNewUser, name, email })
+        });
+
+        const result = await resp.json();
+        if (resp.ok && result.buyer) {
+          buyerData = result.buyer;
+        } else {
+          if (!isNewUser && resp.status === 404) {
+            messageEl.textContent = 'No buyer found. Please register as a new buyer.';
+            messageEl.classList.remove('hidden');
+            return;
+          }
+          if (isNewUser && resp.status === 409) {
+            messageEl.textContent = 'Buyer already exists. Please login as existing buyer.';
+            messageEl.classList.remove('hidden');
+            return;
+          }
+          messageEl.textContent = result.error || 'OTP verification failed.';
+          messageEl.classList.remove('hidden');
+          return;
+        }
+      } catch (err) {
+        console.warn('Backend verify-otp unavailable, local fallback:', err.message);
+      }
+
+      const registeredBuyersFinal = JSON.parse(localStorage.getItem('vayalRegisteredBuyers')) || {};
+
+      if (!buyerData) {
+        if (registeredBuyersFinal[phone]) {
+          buyerData = registeredBuyersFinal[phone];
+        } else if (isNewUser) {
+          buyerData = {
+            uid: 'local-' + phone.replace(/\D/g, ''),
+            name,
+            phone,
+            email,
+            totalSpent: 0,
+            ordersCount: 0,
+            orderHistory: [],
+            joined: new Date().toISOString()
+          };
+        } else {
+          messageEl.textContent = 'No buyer found; please register first.';
+          messageEl.classList.remove('hidden');
+          // leave on existing tab to avoid sudden navigation jumps.
+          return;
+        }
+      }
+
+      buyerData.uid = buyerData.uid || ('local-' + phone.replace(/\D/g, ''));
+      registeredBuyersFinal[phone] = buyerData;
+      localStorage.setItem('vayalRegisteredBuyers', JSON.stringify(registeredBuyersFinal));
+
+      // IMPORTANT: Store phone BEFORE redirect
+      localStorage.setItem('buyerPhone', phone);
+      localStorage.setItem('currentBuyerPhone', phone);
+      localStorage.setItem('buyerData_' + buyerData.uid, JSON.stringify(buyerData));
+
+      if (isNewUser) {
+        // Redirect immediately for new users
+        window.location.href = 'buyer-onboarding.html';
+      } else {
+        alert(`🎉 Welcome, ${buyerData.name}!`);
+        window.location.href = "buyer.html";
+      }
+    }
+
+    // Initialize
+    function getInitialBuyerTab() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('tab') === 'register' ? 1 : 0;
+    }
+
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'ta,hi,te,bn,ml',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+
+    function toggleGTPanel() {
+      document.getElementById('gt-panel')?.classList.toggle('hidden');
+    }
+
+    function setTranslationPreference(lang) {
+      if (lang === 'en') {
+        localStorage.removeItem('selectedTranslationLanguage');
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        localStorage.setItem('selectedTranslationLanguage', lang);
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+    }
+
+    function restoreTranslationFromStorage() {
+      const lang = localStorage.getItem('selectedTranslationLanguage') || 'en';
+      if (lang === 'en') {
+        document.cookie = 'googtrans=/en/en; path=/';
+      } else {
+        document.cookie = `googtrans=/en/${lang}; path=/`;
+      }
+      return lang;
+    }
+
+    function applyGoogleTranslate(lang) {
+      document.getElementById('gt-panel')?.classList.add('hidden');
+      setTranslationPreference(lang);
+      if (lang === 'en') {
+        setBuyerLoginLanguage('en');
+      } else {
+        setBuyerLoginLanguage(lang);
+      }
+
+      const googleReady = typeof google !== 'undefined' && google.translate && google.translate.TranslateElement;
+      if (googleReady) {
+        location.reload();
+      }
+    }
+
+    function initializeLanguageSelector() {
+      const selector = document.getElementById('languageSelect');
+      const wrapper = document.getElementById('gt-wrapper');
+      if (!selector || !wrapper) return;
+      selector.addEventListener('change', (e) => {
+        if (e.target.value === 'google') {
+          wrapper.classList.remove('hidden');
+        } else {
+          wrapper.classList.add('hidden');
+        }
+      });
+      const mode = localStorage.getItem('selectedTranslationLanguage') && localStorage.getItem('selectedTranslationLanguage') !== 'en'
+        ? 'google'
+        : 'en';
+      selector.value = mode;
+      if (mode === 'google') {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
+    }
+
+    window.onload = () => {
+      clearInvalidBuyerSession();
+      switchBuyerTab(getInitialBuyerTab());
+      restoreTranslationFromStorage();
+      initializeLanguageSelector();
+      const script = document.createElement('script');
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      document.head.appendChild(script);
+      setBuyerLoginLanguage('en');
+    };
+  </script>
+  <div id="google_translate_element" class="hidden"></div>
+</body>
+</html>
